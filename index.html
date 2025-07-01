@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hucha Digital</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@700&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      font-family: 'Rubik', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .goal-container {
+      width: 80%;
+      margin-bottom: 10px;
+    }
+    .goal-bar-bg {
+      width: 100%;
+      height: 20px;
+      background: #ddd;
+      border: 2px solid black;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .goal-bar-fill {
+      height: 100%;
+      background: green;
+      width: 0%;
+    }
+    .goal-input {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    .counter {
+      font-size: 3em;
+      margin-bottom: 20px;
+    }
+    .pig {
+      font-size: 6em;
+      border: 5px solid black;
+      border-radius: 50%;
+      padding: 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1em;
+      border: 2px solid black;
+      background: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    input {
+      padding: 10px;
+      font-size: 1em;
+      width: 100px;
+      text-align: center;
+      border: 2px solid black;
+    }
+  </style>
+</head>
+<body>
+  <div class="goal-container">
+    <div class="goal-bar-bg">
+      <div class="goal-bar-fill" id="goalFill"></div>
+    </div>
+    <div class="goal-input">
+      <input id="goal" type="number" placeholder="Meta (€)" />
+      <button onclick="setGoal()">Guardar meta</button>
+    </div>
+  </div>
+
+  <div class="counter" id="counter">€0.00</div>
+  <div class="pig">🐷</div>
+  <div class="buttons">
+    <button onclick="addAmount(1)">+1€</button>
+    <button onclick="addAmount(5)">+5€</button>
+    <button onclick="addAmount(10)">+10€</button>
+    <input id="custom" type="number" placeholder="Otra" />
+    <button onclick="addCustom()">Añadir</button>
+    <button onclick="editAmount()">Editar</button>
+    <button onclick="resetCounter()" style="color: red;">Reiniciar</button>
+  </div>
+
+  <script>
+    let total = parseFloat(localStorage.getItem('piggyTotal')) || 0;
+    let goal = parseFloat(localStorage.getItem('piggyGoal')) || 0;
+    const counter = document.getElementById('counter');
+    const goalFill = document.getElementById('goalFill');
+
+    function updateDisplay() {
+      counter.textContent = `€${total.toFixed(2)}`;
+      updateGoalBar();
+    }
+
+    function updateGoalBar() {
+      if (goal > 0) {
+        let percent = Math.min(100, (total / goal) * 100);
+        goalFill.style.width = percent + '%';
+      } else {
+        goalFill.style.width = '0%';
+      }
+    }
+
+    function addAmount(amount) {
+      total += amount;
+      localStorage.setItem('piggyTotal', total);
+      updateDisplay();
+    }
+
+    function addCustom() {
+      const input = document.getElementById('custom');
+      const value = parseFloat(input.value);
+      if (!isNaN(value)) {
+        total += value;
+        localStorage.setItem('piggyTotal', total);
+        updateDisplay();
+        input.value = '';
+      }
+    }
+
+    function editAmount() {
+      const newValue = prompt("Introduce el nuevo total (€):", total);
+      const value = parseFloat(newValue);
+      if (!isNaN(value)) {
+        total = value;
+        localStorage.setItem('piggyTotal', total);
+        updateDisplay();
+      }
+    }
+
+    function resetCounter() {
+      if (confirm("¿Estás seguro de que quieres reiniciar la hucha?")) {
+        total = 0;
+        localStorage.setItem('piggyTotal', total);
+        updateDisplay();
+      }
+    }
+
+    function setGoal() {
+      const input = document.getElementById('goal');
+      const value = parseFloat(input.value);
+      if (!isNaN(value) && value > 0) {
+        goal = value;
+        localStorage.setItem('piggyGoal', goal);
+        updateGoalBar();
+      }
+    }
+
+    updateDisplay();
+  </script>
+</body>
+</html>
