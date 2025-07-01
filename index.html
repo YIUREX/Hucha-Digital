@@ -7,7 +7,6 @@
   <link rel="manifest" href="manifest.json" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@700&display=swap');
-
     body {
       margin: 0;
       padding: 0;
@@ -18,6 +17,7 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
+      position: relative;
     }
     .goal-container {
       width: 80%;
@@ -43,9 +43,21 @@
       justify-content: center;
       align-items: center;
     }
+    #goalName {
+      font-size: 1.5em;
+      font-weight: 700;
+      border: 2px solid black;
+      padding: 5px 10px;
+      border-radius: 5px;
+      width: 80%;
+      text-align: center;
+      margin-bottom: 5px;
+      user-select: text;
+      outline: none;
+    }
     .counter {
       font-size: 3em;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     .pig {
       font-size: 6em;
@@ -62,6 +74,7 @@
       gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
+      margin-bottom: 10px;
     }
     button {
       padding: 10px 20px;
@@ -71,12 +84,35 @@
       cursor: pointer;
       font-weight: bold;
     }
-    input {
+    input[type=number] {
       padding: 10px;
       font-size: 1em;
       width: 100px;
       text-align: center;
       border: 2px solid black;
+    }
+    .settings-icon {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+    .settings-menu {
+      position: absolute;
+      bottom: 60px;
+      right: 20px;
+      background: white;
+      border: 2px solid black;
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 10;
+    }
+    .settings-menu button {
+      padding: 5px 10px;
+      font-size: 0.9em;
     }
   </style>
 </head>
@@ -91,6 +127,8 @@
     </div>
   </div>
 
+  <input id="goalName" type="text" placeholder="Nombre del ahorro (ej. PlayStation 5)" maxlength="30" />
+
   <div class="counter" id="counter">€0.00</div>
   <div class="pig">🐷</div>
   <div class="buttons">
@@ -103,15 +141,47 @@
     <button onclick="resetCounter()" style="color: red;">Reiniciar</button>
   </div>
 
+  <div class="settings-icon" onclick="toggleSettings()">⚙️</div>
+  <div class="settings-menu" id="settingsMenu">
+    <strong>🎵 Sonido:</strong>
+    <button onclick="setSound('coin')">Sonido 1 (Moneda)</button>
+    <button onclick="setSound('bell')">Sonido 2 (Campanita)</button>
+    <button onclick="setSound('none')">Silencio</button>
+  </div>
+
+  <audio id="sound-coin" src="https://cdn.pixabay.com/audio/2022/03/15/audio_cfc4f0b55b.mp3"></audio>
+  <audio id="sound-bell" src="https://cdn.pixabay.com/audio/2022/03/15/audio_9e0a778b3f.mp3"></audio>
+
   <script>
     let total = parseFloat(localStorage.getItem('piggyTotal')) || 0;
     let goal = parseFloat(localStorage.getItem('piggyGoal')) || 0;
+    let soundType = localStorage.getItem('piggySound') || 'coin';
+    let goalName = localStorage.getItem('piggyGoalName') || '';
+
     const counter = document.getElementById('counter');
     const goalFill = document.getElementById('goalFill');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const goalNameInput = document.getElementById('goalName');
+
+    function playSound() {
+      if (soundType === 'coin') document.getElementById('sound-coin').play();
+      if (soundType === 'bell') document.getElementById('sound-bell').play();
+    }
+
+    function toggleSettings() {
+      settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function setSound(type) {
+      soundType = type;
+      localStorage.setItem('piggySound', type);
+      toggleSettings();
+    }
 
     function updateDisplay() {
       counter.textContent = `€${total.toFixed(2)}`;
       updateGoalBar();
+      goalNameInput.value = goalName;
     }
 
     function updateGoalBar() {
@@ -127,6 +197,7 @@
       total += amount;
       localStorage.setItem('piggyTotal', total);
       updateDisplay();
+      if (soundType !== 'none') playSound();
     }
 
     function addCustom() {
@@ -136,6 +207,7 @@
         total += value;
         localStorage.setItem('piggyTotal', total);
         updateDisplay();
+        if (soundType !== 'none') playSound();
         input.value = '';
       }
     }
@@ -167,6 +239,11 @@
         updateGoalBar();
       }
     }
+
+    goalNameInput.addEventListener('input', () => {
+      goalName = goalNameInput.value;
+      localStorage.setItem('piggyGoalName', goalName);
+    });
 
     updateDisplay();
   </script>
