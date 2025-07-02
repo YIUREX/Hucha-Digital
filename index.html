@@ -25,31 +25,56 @@
       background: #121212;
       color: white;
     }
-    .goal-container {
+    /* Área meta mejorada */
+    .goal-container-improved {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
       width: 80%;
-      margin-bottom: 10px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
     }
-    .goal-bar-bg {
-      width: 100%;
-      height: 20px;
-      background: #ddd;
+    .goal-label {
+      font-weight: 700;
+      font-size: 1.2em;
+      user-select: none;
+      color: inherit;
+    }
+    #goalInput {
+      font-size: 1.2em;
+      padding: 5px 8px;
+      width: 120px;
       border: 2px solid black;
-      border-radius: 10px;
+      border-radius: 5px;
+      outline: none;
+      background: transparent;
+      color: inherit;
+      transition: border-color 0.3s;
+    }
+    #goalInput:focus {
+      border-color: green;
+    }
+    /* Barra de progreso */
+    .goal-bar-bg {
+      width: 80%;
+      height: 16px;
+      background: #ddd;
+      border-radius: 12px;
+      border: 2px solid black;
+      margin: 0 auto 15px;
       overflow: hidden;
     }
     .goal-bar-fill {
       height: 100%;
       background: green;
       width: 0%;
-      transition: width 0.5s ease;
+      transition: width 0.6s ease;
     }
-    .goal-input {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      align-items: center;
-    }
+
+    /* Resto estilos previos */
     #goalName {
       font-size: 1.5em;
       font-weight: 700;
@@ -62,6 +87,9 @@
       outline: none;
       background: transparent;
       color: inherit;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .counter {
       font-size: 3em;
@@ -88,6 +116,10 @@
       cursor: pointer;
       color: inherit;
       transition: background-color 0.3s, color 0.3s;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
     }
     #toggleAdd:hover {
       background-color: black;
@@ -99,6 +131,9 @@
       gap: 10px;
       flex-wrap: wrap;
       margin-bottom: 10px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .buttons.show {
       display: flex;
@@ -190,7 +225,6 @@
       color: white;
       border-color: white;
     }
-    /* Menu desplegable de huchas */
     .piggy-menu-icon {
       position: absolute;
       top: 10px;
@@ -255,14 +289,19 @@
     <div id="piggyList"></div>
   </div>
 
-  <div class="goal-container">
-    <div class="goal-bar-bg">
-      <div class="goal-bar-fill" id="goalFill"></div>
-    </div>
-    <div class="goal-input">
-      <input id="goal" type="number" placeholder="Meta (€)" />
-      <button onclick="setGoal()">Guardar meta</button>
-    </div>
+  <div class="goal-container-improved">
+    <label for="goalInput" class="goal-label">🎯 Meta (€):</label>
+    <input
+      id="goalInput"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="Ej: 100"
+      value=""
+    />
+  </div>
+  <div class="goal-bar-bg">
+    <div class="goal-bar-fill" id="goalFill"></div>
   </div>
 
   <input id="goalName" type="text" placeholder="Nombre del ahorro (ej. Viaje)" maxlength="30" />
@@ -311,6 +350,7 @@
     const goalFill = document.getElementById('goalFill');
     const settingsMenu = document.getElementById('settingsMenu');
     const goalNameInput = document.getElementById('goalName');
+    const goalInput = document.getElementById('goalInput');
     const historyBox = document.getElementById('historyBox');
     const piggyMenu = document.getElementById('piggyMenu');
     const piggyList = document.getElementById('piggyList');
@@ -341,6 +381,7 @@
       const piggy = piggies[currentPiggyId];
       counter.textContent = `€${piggy.total.toFixed(2)}`;
       goalNameInput.value = piggy.name || '';
+      goalInput.value = piggy.goal > 0 ? piggy.goal : '';
       if (piggy.goal > 0) {
         let percent = Math.min(100, (piggy.total / piggy.goal) * 100);
         goalFill.style.width = percent + '%';
@@ -354,7 +395,6 @@
       }
     }
 
-    // Añadir cantidad al total y guardar en historial
     function addAmount(amount) {
       if (amount <= 0) return;
       const piggy = piggies[currentPiggyId];
@@ -365,7 +405,6 @@
       if (piggy.sound !== 'none') playSound(piggy.sound);
     }
 
-    // Añadir valor personalizado
     function addCustom() {
       const input = document.getElementById('custom');
       const value = parseFloat(input.value);
@@ -375,7 +414,6 @@
       }
     }
 
-    // Editar total manualmente
     function editAmount() {
       const piggy = piggies[currentPiggyId];
       const newValue = prompt('Nuevo total (€):', piggy.total.toFixed(2));
@@ -387,7 +425,6 @@
       }
     }
 
-    // Reiniciar hucha actual
     function resetCounter() {
       if (confirm('¿Reiniciar hucha? Se borrará todo el progreso.')) {
         const piggy = piggies[currentPiggyId];
@@ -400,26 +437,22 @@
       }
     }
 
-    // Guardar meta
-    function setGoal() {
-      const input = document.getElementById('goal');
-      const value = parseFloat(input.value);
-      if (!isNaN(value) && value > 0) {
+    // Guardar meta al cambiar input
+    goalInput.addEventListener('change', () => {
+      const value = parseFloat(goalInput.value);
+      if (!isNaN(value) && value >= 0) {
         piggies[currentPiggyId].goal = value;
         savePiggies();
         updateUI();
-        input.value = '';
       }
-    }
+    });
 
-    // Guardar nombre hucha
     goalNameInput.addEventListener('input', () => {
       piggies[currentPiggyId].name = goalNameInput.value;
       savePiggies();
       updatePiggyList();
     });
 
-    // Sonido
     function playSound(type) {
       const coinSound = document.getElementById('sound-coin');
       const bellSound = document.getElementById('sound-bell');
@@ -439,7 +472,6 @@
       toggleSettings();
     }
 
-    // Modo oscuro
     function toggleDarkMode() {
       const piggy = piggies[currentPiggyId];
       piggy.dark = !piggy.dark;
@@ -447,7 +479,6 @@
       updateUI();
     }
 
-    // Mostrar/Ocultar menú de ajustes
     function toggleSettings(force) {
       if (typeof force === 'boolean') {
         settingsMenu.style.display = force ? 'flex' : 'none';
@@ -456,7 +487,6 @@
       }
     }
 
-    // Menú de huchas
     function togglePiggyMenu(force) {
       if (typeof force === 'boolean') {
         piggyMenu.style.display = force ? 'flex' : 'none';
@@ -465,7 +495,6 @@
       }
     }
 
-    // Actualizar lista de huchas en menú
     function updatePiggyList() {
       piggyList.innerHTML = '';
       for (const id in piggies) {
@@ -482,15 +511,12 @@
         };
         piggyList.appendChild(btn);
       }
-      // Botón crear nueva hucha
       const newPiggyBtn = document.createElement('button');
       newPiggyBtn.textContent = '+ Nueva hucha';
       newPiggyBtn.style.color = 'green';
       newPiggyBtn.onclick = () => {
         let i = 1;
-        while (Object.values(piggies).some(p => p.name === `Hucha ${i}`)) {
-          i++;
-        }
+        while (Object.values(piggies).some(p => p.name === `Hucha ${i}`)) i++;
         const newId = 'piggy_' + Date.now();
         piggies[newId] = {
           name: `Hucha ${i}`,
@@ -509,7 +535,6 @@
       };
       piggyList.appendChild(newPiggyBtn);
 
-      // Botón romper hucha
       const breakBtn = document.createElement('button');
       breakBtn.textContent = '💥 Romper hucha';
       breakBtn.style.color = 'red';
@@ -550,7 +575,6 @@
       updateUI();
     }
 
-    // Mostrar/Ocultar botones de añadir dinero
     function toggleAddButtons() {
       if (addButtonsDiv.style.display === 'none' || addButtonsDiv.style.display === '') {
         addButtonsDiv.style.display = 'flex';
@@ -566,7 +590,6 @@
     }
     toggleAddBtn.addEventListener('click', toggleAddButtons);
 
-    // Historial
     function toggleHistory() {
       if (historyBox.style.display === 'block') {
         historyBox.style.display = 'none';
@@ -588,7 +611,7 @@
       historyBox.style.display = 'none';
     }
 
-    // Gráfico con Chart.js
+    let chartInstance = null;
     function toggleProgress() {
       if (progressChart.style.display === 'block') {
         hideProgress();
@@ -613,7 +636,7 @@
       }
       progressChart.style.display = 'block';
 
-      // Preparar datos para gráfico (suma acumulada diaria)
+      // Suma acumulada diaria para gráfico
       const dataMap = {};
       piggy.history.forEach(h => {
         const dateStr = new Date(h.date).toLocaleDateString();
@@ -652,7 +675,6 @@
       });
     }
 
-    // Inicialización
     updatePiggyList();
     updateUI();
     hideAddButtons();
