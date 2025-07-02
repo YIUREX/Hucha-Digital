@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hucha Digital</title>
+  <title>Hucha Digital - Multiobjetivos</title>
   <link rel="manifest" href="manifest.json" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@700&display=swap');
@@ -40,6 +40,7 @@
       height: 100%;
       background: green;
       width: 0%;
+      transition: width 0.5s ease;
     }
     .goal-input {
       margin-top: 10px;
@@ -58,6 +59,8 @@
       text-align: center;
       margin-bottom: 5px;
       outline: none;
+      background: transparent;
+      color: inherit;
     }
     .counter {
       font-size: 3em;
@@ -87,6 +90,12 @@
       background: none;
       cursor: pointer;
       font-weight: bold;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    button:hover {
+      background-color: black;
+      color: white;
     }
     input[type=number] {
       padding: 10px;
@@ -94,6 +103,8 @@
       width: 100px;
       text-align: center;
       border: 2px solid black;
+      background: transparent;
+      color: inherit;
     }
     .settings-icon {
       position: absolute;
@@ -101,6 +112,7 @@
       right: 20px;
       font-size: 1.5em;
       cursor: pointer;
+      user-select: none;
     }
     .settings-menu {
       position: absolute;
@@ -113,10 +125,28 @@
       flex-direction: column;
       gap: 5px;
       z-index: 10;
+      max-width: 280px;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark .settings-menu {
+      background: #222;
+      color: white;
+      border-color: white;
     }
     .settings-menu button {
       padding: 5px 10px;
       font-size: 0.9em;
+      color: inherit;
+      border: 1px solid currentColor;
+      background: none;
+      cursor: pointer;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .settings-menu button:hover {
+      background-color: currentColor;
+      color: inherit;
+      filter: invert(1);
     }
     .history {
       position: absolute;
@@ -129,14 +159,82 @@
       max-height: 300px;
       overflow-y: auto;
       z-index: 10;
+      width: 90vw;
+      max-width: 400px;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
     }
-    body.dark .settings-menu, body.dark .history {
+    body.dark .history {
       background: #222;
       color: white;
+      border-color: white;
+    }
+    /* Menu desplegable de huchas */
+    .piggy-menu-icon {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 2em;
+      cursor: pointer;
+      user-select: none;
+      color: black;
+      transition: color 0.3s;
+    }
+    body.dark .piggy-menu-icon {
+      color: white;
+    }
+    .piggy-menu {
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      background: white;
+      border: 2px solid black;
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 20;
+      max-height: 300px;
+      overflow-y: auto;
+      width: 200px;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    body.dark .piggy-menu {
+      background: #222;
+      color: white;
+      border-color: white;
+    }
+    .piggy-menu button {
+      background: none;
+      border: 1px solid currentColor;
+      padding: 8px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: bold;
+      color: inherit;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .piggy-menu button:hover {
+      background-color: currentColor;
+      color: inherit;
+      filter: invert(1);
+    }
+    #progressChart {
+      max-width: 90vw;
+      max-height: 250px;
+      margin: 10px auto 0;
+      display: none;
     }
   </style>
 </head>
 <body>
+  <div class="piggy-menu-icon" title="Menú de huchas" onclick="togglePiggyMenu()">☰</div>
+  <div class="piggy-menu" id="piggyMenu">
+    <div id="piggyList"></div>
+    <button onclick="addNewPiggy()">+ Añadir nueva hucha</button>
+  </div>
+
   <div class="goal-container">
     <div class="goal-bar-bg">
       <div class="goal-bar-fill" id="goalFill"></div>
@@ -172,130 +270,308 @@
     <hr>
     <strong>📜 Historial:</strong>
     <button onclick="toggleHistory()">Ver historial</button>
+    <button onclick="toggleProgress()">Ver progreso</button>
   </div>
 
   <div class="history" id="historyBox"></div>
+  <canvas id="progressChart"></canvas>
 
   <audio id="sound-coin" src="https://cdn.pixabay.com/audio/2022/03/15/audio_cfc4f0b55b.mp3"></audio>
   <audio id="sound-bell" src="https://cdn.pixabay.com/audio/2022/03/15/audio_9e0a778b3f.mp3"></audio>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
-    let total = parseFloat(localStorage.getItem('piggyTotal')) || 0;
-    let goal = parseFloat(localStorage.getItem('piggyGoal')) || 0;
-    let soundType = localStorage.getItem('piggySound') || 'coin';
-    let goalName = localStorage.getItem('piggyGoalName') || '';
-    let history = JSON.parse(localStorage.getItem('piggyHistory')) || [];
-    let dark = localStorage.getItem('piggyDark') === 'true';
+    // Datos guardados: objeto con múltiples huchas
+    // Cada hucha tiene: name, total, goal, history (array de {date, amount}), sound, dark
+    let piggies = JSON.parse(localStorage.getItem('piggies')) || {};
 
+    // ID de la hucha actual
+    let currentPiggyId = localStorage.getItem('currentPiggyId') || null;
+
+    // Referencias DOM
     const counter = document.getElementById('counter');
     const goalFill = document.getElementById('goalFill');
     const settingsMenu = document.getElementById('settingsMenu');
     const goalNameInput = document.getElementById('goalName');
     const historyBox = document.getElementById('historyBox');
+    const piggyMenu = document.getElementById('piggyMenu');
+    const piggyList = document.getElementById('piggyList');
+    const progressChart = document.getElementById('progressChart');
+    let chartInstance = null;
 
-    function playSound() {
-      if (soundType === 'coin') document.getElementById('sound-coin').play();
-      if (soundType === 'bell') document.getElementById('sound-bell').play();
+    // Iniciar app
+    if (!currentPiggyId || !piggies[currentPiggyId]) {
+      // Si no hay huchas, creamos una por defecto
+      currentPiggyId = 'default';
+      piggies[currentPiggyId] = {
+        name: 'Hucha principal',
+        total: 0,
+        goal: 0,
+        history: [],
+        sound: 'coin',
+        dark: false
+      };
+      savePiggies();
     }
 
-    function toggleSettings() {
-      settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+    // Guardar en localStorage
+    function savePiggies() {
+      localStorage.setItem('piggies', JSON.stringify(piggies));
+      localStorage.setItem('currentPiggyId', currentPiggyId);
     }
 
-    function setSound(type) {
-      soundType = type;
-      localStorage.setItem('piggySound', type);
-      toggleSettings();
-    }
-
-    function updateDisplay() {
-      counter.textContent = `€${total.toFixed(2)}`;
-      updateGoalBar();
-      goalNameInput.value = goalName;
-    }
-
-    function updateGoalBar() {
-      if (goal > 0) {
-        let percent = Math.min(100, (total / goal) * 100);
-        goalFill.style.width = percent + '%';
-        if (percent >= 100) {
-          confetti();
+    // Cambiar hucha actual
+    function setCurrentPiggy(id) {
+      if (piggies[id]) {
+        currentPiggyId = id;
+        savePiggies();
+        hideHistory();
+        hideProgress();
+        updateUI();
+        togglePiggyMenu(false);
+        if (piggies[currentPiggyId].dark) {
+          document.body.classList.add('dark');
+        } else {
+          document.body.classList.remove('dark');
         }
-      } else {
-        goalFill.style.width = '0%';
       }
     }
 
-    function addAmount(amount) {
-      total += amount;
-      localStorage.setItem('piggyTotal', total);
-      history.push({ date: new Date().toLocaleString(), amount: amount });
-      localStorage.setItem('piggyHistory', JSON.stringify(history));
-      updateDisplay();
-      if (soundType !== 'none') playSound();
+    // Actualizar interfaz con datos de hucha actual
+    function updateUI() {
+      const piggy = piggies[currentPiggyId];
+      counter.textContent = `€${piggy.total.toFixed(2)}`;
+      goalFill.style.width = piggy.goal > 0 ? Math.min(100, (piggy.total / piggy.goal) * 100) + '%' : '0%';
+      goalNameInput.value = piggy.name;
+      if (piggy.goal > 0 && piggy.total >= piggy.goal) {
+        confetti();
+      }
     }
 
+    // Añadir cantidad al total y guardar en historial
+    function addAmount(amount) {
+      if (amount <= 0) return;
+      const piggy = piggies[currentPiggyId];
+      piggy.total += amount;
+      piggy.history.push({ date: new Date().toISOString(), amount });
+      savePiggies();
+      updateUI();
+      if (piggy.sound !== 'none') playSound(piggy.sound);
+    }
+
+    // Añadir valor personalizado
     function addCustom() {
       const input = document.getElementById('custom');
       const value = parseFloat(input.value);
-      if (!isNaN(value)) {
+      if (!isNaN(value) && value > 0) {
         addAmount(value);
         input.value = '';
       }
     }
 
+    // Editar total manualmente
     function editAmount() {
-      const newValue = prompt("Nuevo total (€):", total);
+      const piggy = piggies[currentPiggyId];
+      const newValue = prompt('Nuevo total (€):', piggy.total.toFixed(2));
       const value = parseFloat(newValue);
-      if (!isNaN(value)) {
-        total = value;
-        localStorage.setItem('piggyTotal', total);
-        updateDisplay();
+      if (!isNaN(value) && value >= 0) {
+        piggy.total = value;
+        savePiggies();
+        updateUI();
       }
     }
 
+    // Reiniciar hucha actual
     function resetCounter() {
-      if (confirm("¿Reiniciar hucha?")) {
-        total = 0;
-        localStorage.setItem('piggyTotal', total);
-        updateDisplay();
+      if (confirm('¿Reiniciar hucha?')) {
+        const piggy = piggies[currentPiggyId];
+        piggy.total = 0;
+        piggy.history = [];
+        savePiggies();
+        updateUI();
+        hideHistory();
+        hideProgress();
       }
     }
 
+    // Guardar meta
     function setGoal() {
       const input = document.getElementById('goal');
       const value = parseFloat(input.value);
       if (!isNaN(value) && value > 0) {
-        goal = value;
-        localStorage.setItem('piggyGoal', goal);
-        updateGoalBar();
+        piggies[currentPiggyId].goal = value;
+        savePiggies();
+        updateUI();
+        input.value = '';
       }
     }
 
-    function toggleDarkMode() {
-      dark = !dark;
-      localStorage.setItem('piggyDark', dark);
-      document.body.classList.toggle('dark', dark);
+    // Guardar nombre hucha
+    goalNameInput.addEventListener('input', () => {
+      piggies[currentPiggyId].name = goalNameInput.value;
+      savePiggies();
+      updatePiggyList();
+    });
+
+    // Sonido
+    function playSound(type) {
+      if (type === 'coin') document.getElementById('sound-coin').play();
+      if (type === 'bell') document.getElementById('sound-bell').play();
+    }
+    function setSound(type) {
+      piggies[currentPiggyId].sound = type;
+      savePiggies();
+      toggleSettings();
     }
 
+    // Modo oscuro
+    function toggleDarkMode() {
+      const piggy = piggies[currentPiggyId];
+      piggy.dark = !piggy.dark;
+      savePiggies();
+      if (piggy.dark) document.body.classList.add('dark');
+      else document.body.classList.remove('dark');
+    }
+
+    // Mostrar/Ocultar menú de ajustes
+    function toggleSettings() {
+      settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    // Menú de huchas
+    function togglePiggyMenu(force) {
+      if (typeof force === 'boolean') {
+        piggyMenu.style.display = force ? 'flex' : 'none';
+      } else {
+        piggyMenu.style.display = piggyMenu.style.display === 'flex' ? 'none' : 'flex';
+      }
+    }
+
+    // Actualizar lista de huchas en menú
+    function updatePiggyList() {
+      piggyList.innerHTML = '';
+      for (const id in piggies) {
+        const btn = document.createElement('button');
+        btn.textContent = piggies[id].name || '(sin nombre)';
+        if (id === currentPiggyId) btn.style.fontWeight = '900';
+        btn.onclick = () => setCurrentPiggy(id);
+        piggyList.appendChild(btn);
+      }
+    }
+
+    // Añadir nueva hucha
+    function addNewPiggy() {
+      const name = prompt('Nombre para la nueva hucha:', 'Nueva Hucha');
+      if (!name) return;
+      // Generar ID único
+      const id = 'piggy_' + Date.now();
+      piggies[id] = {
+        name: name,
+        total: 0,
+        goal: 0,
+        history: [],
+        sound: 'coin',
+        dark: false
+      };
+      savePiggies();
+      updatePiggyList();
+      setCurrentPiggy(id);
+      togglePiggyMenu(false);
+    }
+
+    // Historial
     function toggleHistory() {
       if (historyBox.style.display === 'block') {
         historyBox.style.display = 'none';
       } else {
-        historyBox.innerHTML = history.map(h => `+€${h.amount} - ${h.date}`).reverse().join("<br>");
+        const piggy = piggies[currentPiggyId];
+        historyBox.innerHTML = piggy.history.length
+          ? piggy.history
+              .slice()
+              .reverse()
+              .map(h => `+€${h.amount.toFixed(2)} - ${new Date(h.date).toLocaleString()}`)
+              .join('<br>')
+          : 'No hay movimientos aún.';
         historyBox.style.display = 'block';
+        hideProgress();
       }
     }
+    function hideHistory() {
+      historyBox.style.display = 'none';
+    }
 
-    goalNameInput.addEventListener('input', () => {
-      goalName = goalNameInput.value;
-      localStorage.setItem('piggyGoalName', goalName);
-    });
+    // Gráfico con Chart.js
+    function toggleProgress() {
+      if (progressChart.style.display === 'block') {
+        hideProgress();
+      } else {
+        showProgress();
+      }
+      hideHistory();
+    }
+    function hideProgress() {
+      progressChart.style.display = 'none';
+      if (chartInstance) {
+        chartInstance.destroy();
+        chartInstance = null;
+      }
+    }
+    function showProgress() {
+      const piggy = piggies[currentPiggyId];
+      if (!piggy.history.length) {
+        alert('No hay datos para mostrar en el gráfico.');
+        return;
+      }
+      progressChart.style.display = 'block';
 
-    if (dark) document.body.classList.add('dark');
-    updateDisplay();
+      // Preparar datos para gráfico
+      // Sumamos acumulado por fecha
+      const dataMap = {};
+      piggy.history.forEach(h => {
+        const dateStr = new Date(h.date).toLocaleDateString();
+        dataMap[dateStr] = (dataMap[dateStr] || 0) + h.amount;
+      });
+      const dates = Object.keys(dataMap).sort((a,b) => new Date(a) - new Date(b));
+      let cumulative = 0;
+      const cumData = dates.map(d => {
+        cumulative += dataMap[d];
+        return cumulative;
+      });
+
+      // Crear gráfico
+      const ctx = progressChart.getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [{
+            label: `Ahorro - ${piggy.name}`,
+            data: cumData,
+            borderColor: 'green',
+            backgroundColor: 'rgba(0, 128, 0, 0.2)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+
+    // Inicialización
+    updatePiggyList();
+    updateUI();
+    if (piggies[currentPiggyId].dark) document.body.classList.add('dark');
   </script>
 </body>
 </html>
-
-
