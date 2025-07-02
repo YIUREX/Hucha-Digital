@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hucha Digital - Multiobjetivos</title>
   <link rel="manifest" href="manifest.json" />
   <style>
@@ -72,37 +72,55 @@
       border: 5px solid black;
       border-radius: 50%;
       padding: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
       color: inherit;
     }
+    #toggleAdd {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      padding: 10px 20px;
+      border: 2px solid black;
+      background: none;
+      cursor: pointer;
+      color: inherit;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    #toggleAdd:hover {
+      background-color: black;
+      color: white;
+    }
     .buttons {
-      display: flex;
+      display: none;
+      justify-content: center;
       gap: 10px;
       flex-wrap: wrap;
-      justify-content: center;
       margin-bottom: 10px;
     }
-    button {
+    .buttons.show {
+      display: flex;
+    }
+    .buttons button {
       padding: 10px 20px;
       font-size: 1em;
       border: 2px solid black;
       background: none;
       cursor: pointer;
       font-weight: bold;
-      color: black;
+      color: inherit;
       transition: background-color 0.3s, color 0.3s;
     }
-    button:hover {
+    .buttons button:hover {
       background-color: black;
       color: white;
     }
     input[type=number] {
       padding: 10px;
       font-size: 1em;
-      width: 100px;
+      width: 80px;
       text-align: center;
       border: 2px solid black;
       background: transparent;
@@ -250,7 +268,9 @@
   <input id="goalName" type="text" placeholder="Nombre del ahorro (ej. Viaje)" maxlength="30" />
   <div class="counter" id="counter">€0.00</div>
   <div class="pig">🐷</div>
-  <div class="buttons">
+
+  <button id="toggleAdd">Meter a la hucha</button>
+  <div class="buttons" id="addButtons">
     <button onclick="addAmount(1)">+1€</button>
     <button onclick="addAmount(5)">+5€</button>
     <button onclick="addAmount(10)">+10€</button>
@@ -295,6 +315,8 @@
     const piggyMenu = document.getElementById('piggyMenu');
     const piggyList = document.getElementById('piggyList');
     const progressChart = document.getElementById('progressChart');
+    const toggleAddBtn = document.getElementById('toggleAdd');
+    const addButtonsDiv = document.getElementById('addButtons');
     let chartInstance = null;
 
     if (!currentPiggyId || !piggies[currentPiggyId]) {
@@ -367,7 +389,7 @@
 
     // Reiniciar hucha actual
     function resetCounter() {
-      if (confirm('¿Reiniciar hucha?')) {
+      if (confirm('¿Reiniciar hucha? Se borrará todo el progreso.')) {
         const piggy = piggies[currentPiggyId];
         piggy.total = 0;
         piggy.history = [];
@@ -426,8 +448,12 @@
     }
 
     // Mostrar/Ocultar menú de ajustes
-    function toggleSettings() {
-      settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+    function toggleSettings(force) {
+      if (typeof force === 'boolean') {
+        settingsMenu.style.display = force ? 'flex' : 'none';
+      } else {
+        settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+      }
     }
 
     // Menú de huchas
@@ -452,6 +478,7 @@
           hideHistory();
           hideProgress();
           toggleSettings(false);
+          hideAddButtons();
         };
         piggyList.appendChild(btn);
       }
@@ -478,6 +505,7 @@
         updatePiggyList();
         updateUI();
         togglePiggyMenu(false);
+        hideAddButtons();
       };
       piggyList.appendChild(newPiggyBtn);
 
@@ -510,6 +538,7 @@
           hideHistory();
           hideProgress();
           toggleSettings(false);
+          hideAddButtons();
         }
       };
       piggyList.appendChild(breakBtn);
@@ -520,6 +549,22 @@
       savePiggies();
       updateUI();
     }
+
+    // Mostrar/Ocultar botones de añadir dinero
+    function toggleAddButtons() {
+      if (addButtonsDiv.style.display === 'none' || addButtonsDiv.style.display === '') {
+        addButtonsDiv.style.display = 'flex';
+        toggleAddBtn.textContent = 'Cerrar';
+      } else {
+        addButtonsDiv.style.display = 'none';
+        toggleAddBtn.textContent = 'Meter a la hucha';
+      }
+    }
+    function hideAddButtons() {
+      addButtonsDiv.style.display = 'none';
+      toggleAddBtn.textContent = 'Meter a la hucha';
+    }
+    toggleAddBtn.addEventListener('click', toggleAddButtons);
 
     // Historial
     function toggleHistory() {
@@ -536,6 +581,7 @@
           : 'No hay movimientos aún.';
         historyBox.style.display = 'block';
         hideProgress();
+        hideAddButtons();
       }
     }
     function hideHistory() {
@@ -550,6 +596,7 @@
         showProgress();
       }
       hideHistory();
+      hideAddButtons();
     }
     function hideProgress() {
       progressChart.style.display = 'none';
@@ -566,8 +613,7 @@
       }
       progressChart.style.display = 'block';
 
-      // Preparar datos para gráfico
-      // Sumamos acumulado por fecha
+      // Preparar datos para gráfico (suma acumulada diaria)
       const dataMap = {};
       piggy.history.forEach(h => {
         const dateStr = new Date(h.date).toLocaleDateString();
@@ -580,7 +626,6 @@
         return cumulative;
       });
 
-      // Crear gráfico
       const ctx = progressChart.getContext('2d');
       if (chartInstance) chartInstance.destroy();
       chartInstance = new Chart(ctx, {
@@ -601,9 +646,7 @@
         options: {
           responsive: true,
           scales: {
-            y: {
-              beginAtZero: true
-            }
+            y: { beginAtZero: true }
           }
         }
       });
@@ -612,7 +655,7 @@
     // Inicialización
     updatePiggyList();
     updateUI();
+    hideAddButtons();
   </script>
 </body>
 </html>
-
