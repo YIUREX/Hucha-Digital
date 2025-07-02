@@ -19,6 +19,7 @@
       position: relative;
       background: white;
       transition: background 0.3s, color 0.3s;
+      color: black;
     }
     body.dark {
       background: #121212;
@@ -75,6 +76,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      color: inherit;
     }
     .buttons {
       display: flex;
@@ -113,6 +115,7 @@
       font-size: 1.5em;
       cursor: pointer;
       user-select: none;
+      color: inherit;
     }
     .settings-menu {
       position: absolute;
@@ -232,7 +235,6 @@
   <div class="piggy-menu-icon" title="Menú de huchas" onclick="togglePiggyMenu()">☰</div>
   <div class="piggy-menu" id="piggyMenu">
     <div id="piggyList"></div>
-    <button onclick="addNewPiggy()">+ Añadir nueva hucha</button>
   </div>
 
   <div class="goal-container">
@@ -282,14 +284,9 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
-    // Datos guardados: objeto con múltiples huchas
-    // Cada hucha tiene: name, total, goal, history (array de {date, amount}), sound, dark
     let piggies = JSON.parse(localStorage.getItem('piggies')) || {};
-
-    // ID de la hucha actual
     let currentPiggyId = localStorage.getItem('currentPiggyId') || null;
 
-    // Referencias DOM
     const counter = document.getElementById('counter');
     const goalFill = document.getElementById('goalFill');
     const settingsMenu = document.getElementById('settingsMenu');
@@ -300,9 +297,7 @@
     const progressChart = document.getElementById('progressChart');
     let chartInstance = null;
 
-    // Iniciar app
     if (!currentPiggyId || !piggies[currentPiggyId]) {
-      // Si no hay huchas, creamos una por defecto
       currentPiggyId = 'default';
       piggies[currentPiggyId] = {
         name: 'Hucha principal',
@@ -315,37 +310,25 @@
       savePiggies();
     }
 
-    // Guardar en localStorage
     function savePiggies() {
       localStorage.setItem('piggies', JSON.stringify(piggies));
       localStorage.setItem('currentPiggyId', currentPiggyId);
     }
 
-    // Cambiar hucha actual
-    function setCurrentPiggy(id) {
-      if (piggies[id]) {
-        currentPiggyId = id;
-        savePiggies();
-        hideHistory();
-        hideProgress();
-        updateUI();
-        togglePiggyMenu(false);
-        if (piggies[currentPiggyId].dark) {
-          document.body.classList.add('dark');
-        } else {
-          document.body.classList.remove('dark');
-        }
-      }
-    }
-
-    // Actualizar interfaz con datos de hucha actual
     function updateUI() {
       const piggy = piggies[currentPiggyId];
       counter.textContent = `€${piggy.total.toFixed(2)}`;
-      goalFill.style.width = piggy.goal > 0 ? Math.min(100, (piggy.total / piggy.goal) * 100) + '%' : '0%';
-      goalNameInput.value = piggy.name;
-      if (piggy.goal > 0 && piggy.total >= piggy.goal) {
-        confetti();
+      goalNameInput.value = piggy.name || '';
+      if (piggy.goal > 0) {
+        let percent = Math.min(100, (piggy.total / piggy.goal) * 100);
+        goalFill.style.width = percent + '%';
+      } else {
+        goalFill.style.width = '0%';
+      }
+      if (piggy.dark) {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
       }
     }
 
@@ -416,8 +399,17 @@
 
     // Sonido
     function playSound(type) {
-      if (type === 'coin') document.getElementById('sound-coin').play();
-      if (type === 'bell') document.getElementById('sound-bell').play();
+      const coinSound = document.getElementById('sound-coin');
+      const bellSound = document.getElementById('sound-bell');
+      if (type === 'coin') {
+        coinSound.pause();
+        coinSound.currentTime = 0;
+        coinSound.play();
+      } else if (type === 'bell') {
+        bellSound.pause();
+        bellSound.currentTime = 0;
+        bellSound.play();
+      }
     }
     function setSound(type) {
       piggies[currentPiggyId].sound = type;
@@ -430,8 +422,7 @@
       const piggy = piggies[currentPiggyId];
       piggy.dark = !piggy.dark;
       savePiggies();
-      if (piggy.dark) document.body.classList.add('dark');
-      else document.body.classList.remove('dark');
+      updateUI();
     }
 
     // Mostrar/Ocultar menú de ajustes
@@ -455,29 +446,53 @@
         const btn = document.createElement('button');
         btn.textContent = piggies[id].name || '(sin nombre)';
         if (id === currentPiggyId) btn.style.fontWeight = '900';
-        btn.onclick = () => setCurrentPiggy(id);
+        btn.onclick = () => {
+          setCurrentPiggy(id);
+          togglePiggyMenu(false);
+          hideHistory();
+          hideProgress();
+          toggleSettings(false);
+        };
         piggyList.appendChild(btn);
       }
+      // Botón romper hucha
+      const breakBtn = document.createElement('button');
+      breakBtn.textContent = '💥 Romper hucha';
+      breakBtn.style.color = 'red';
+      breakBtn.onclick = () => {
+        if (confirm('¿Seguro que quieres romper esta hucha? Se perderán todos sus datos.')) {
+          delete piggies[currentPiggyId];
+          const keys = Object.keys(piggies);
+          if (keys.length > 0) {
+            setCurrentPiggy(keys[0]);
+          } else {
+            const defaultId = 'default_' + Date.now();
+            piggies[defaultId] = {
+              name: 'Hucha principal',
+              total: 0,
+              goal: 0,
+              history: [],
+              sound: 'coin',
+              dark: false
+            };
+            setCurrentPiggy(defaultId);
+          }
+          savePiggies();
+          updatePiggyList();
+          alert('¡Hucha rota y eliminada correctamente!');
+          togglePiggyMenu(false);
+          hideHistory();
+          hideProgress();
+          toggleSettings(false);
+        }
+      };
+      piggyList.appendChild(breakBtn);
     }
 
-    // Añadir nueva hucha
-    function addNewPiggy() {
-      const name = prompt('Nombre para la nueva hucha:', 'Nueva Hucha');
-      if (!name) return;
-      // Generar ID único
-      const id = 'piggy_' + Date.now();
-      piggies[id] = {
-        name: name,
-        total: 0,
-        goal: 0,
-        history: [],
-        sound: 'coin',
-        dark: false
-      };
+    function setCurrentPiggy(id) {
+      currentPiggyId = id;
       savePiggies();
-      updatePiggyList();
-      setCurrentPiggy(id);
-      togglePiggyMenu(false);
+      updateUI();
     }
 
     // Historial
@@ -571,7 +586,6 @@
     // Inicialización
     updatePiggyList();
     updateUI();
-    if (piggies[currentPiggyId].dark) document.body.classList.add('dark');
   </script>
 </body>
 </html>
