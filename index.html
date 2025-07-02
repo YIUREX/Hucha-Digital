@@ -455,6 +455,32 @@
         };
         piggyList.appendChild(btn);
       }
+      // Botón crear nueva hucha
+      const newPiggyBtn = document.createElement('button');
+      newPiggyBtn.textContent = '+ Nueva hucha';
+      newPiggyBtn.style.color = 'green';
+      newPiggyBtn.onclick = () => {
+        let i = 1;
+        while (Object.values(piggies).some(p => p.name === `Hucha ${i}`)) {
+          i++;
+        }
+        const newId = 'piggy_' + Date.now();
+        piggies[newId] = {
+          name: `Hucha ${i}`,
+          total: 0,
+          goal: 0,
+          history: [],
+          sound: 'coin',
+          dark: piggies[currentPiggyId]?.dark || false
+        };
+        currentPiggyId = newId;
+        savePiggies();
+        updatePiggyList();
+        updateUI();
+        togglePiggyMenu(false);
+      };
+      piggyList.appendChild(newPiggyBtn);
+
       // Botón romper hucha
       const breakBtn = document.createElement('button');
       breakBtn.textContent = '💥 Romper hucha';
@@ -589,3 +615,4 @@
   </script>
 </body>
 </html>
+
