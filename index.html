@@ -416,8 +416,8 @@
     function resetPiggy() {
       if(!confirm('¿Reiniciar la hucha?')) return;
       const p = piggies[currentPiggyId];
-      p.total = 0;
       p.history.push({amount: -p.total, date: Date.now(), desc: 'Reinicio'});
+      p.total = 0;
       updateUI();
     }
 
@@ -591,53 +591,62 @@
       setName(goalName.value);
     };
 
-    // Gráfico
+    // Gráfico mejorado
     function updateChart() {
       const p = piggies[currentPiggyId];
-      if(!p) return;
-      const labels = p.history.map(item => {
-        const d = new Date(item.date);
-        return d.toLocaleDateString();
+      if (!p) return;
+
+      // Acumular movimientos por fecha
+      const dataMap = {};
+      p.history.forEach(item => {
+        const dateStr = new Date(item.date).toLocaleDateString();
+        dataMap[dateStr] = (dataMap[dateStr] || 0) + item.amount;
       });
-      const data = p.history.map(item => item.amount);
-      if(chart){
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = data;
-        chart.update();
-      } else {
-        const ctx = document.getElementById('progressChart').getContext('2d');
-        chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: 'Movimientos (€)',
-              data: data,
-              borderColor: 'green',
-              backgroundColor: 'rgba(0,128,0,0.2)',
-              fill: true,
-              tension: 0.2,
-              pointRadius: 3,
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: true }
-            },
-            scales: {
-              y: { beginAtZero: true }
-            }
-          }
-        });
+
+      // Ordenar fechas y preparar datos acumulativos
+      const sortedDates = Object.keys(dataMap).sort((a, b) => new Date(a) - new Date(b));
+      let cumulative = 0;
+      const data = sortedDates.map(date => (cumulative += dataMap[date]));
+
+      const ctx = document.getElementById('progressChart').getContext('2d');
+
+      if (chart) {
+        chart.destroy();
       }
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: sortedDates,
+          datasets: [{
+            label: `Progreso - ${p.name}`,
+            data: data,
+            borderColor: 'green',
+            backgroundColor: 'rgba(0, 128, 0, 0.2)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 4,
+            pointHoverRadius: 7,
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
     }
 
-    // Botón Ver progreso (arreglo para mostrar/ocultar y actualizar gráfico)
+    // Botón Ver progreso actualizado
     showProgressBtn.onclick = () => {
       const canvas = document.getElementById('progressChart');
-      if(chart && canvas.style.display === 'block'){
+      if (canvas.style.display === 'block') {
         canvas.style.display = 'none';
+        if (chart) {
+          chart.destroy();
+          chart = null;
+        }
       } else {
         updateChart();
         canvas.style.display = 'block';
