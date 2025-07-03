@@ -326,7 +326,6 @@
       if(data) {
         piggies = JSON.parse(data);
       } else {
-        // Inicializamos una hucha por defecto si no hay datos
         piggies = {
           1: {
             name: 'Mi hucha',
@@ -476,19 +475,21 @@
     // Construir menú huchas
     function buildPiggyMenu() {
       piggyMenu.innerHTML = '';
-      // Lista huchas
       for(const id in piggies){
         const b = document.createElement('button');
         b.textContent = piggies[id].name + (id == currentPiggyId ? ' ✓' : '');
         b.onclick = () => {
           loadPiggy(id);
           piggyMenu.style.display = 'none';
+          hideAddButtons();
+          historyBox.style.display = 'none';
+          settingsMenu.style.display = 'none';
+          hideChart();
         };
         piggyMenu.appendChild(b);
       }
       piggyMenu.appendChild(document.createElement('hr'));
 
-      // Añadir hucha
       const addBtn = document.createElement('button');
       addBtn.textContent = '➕ Añadir hucha';
       addBtn.onclick = () => {
@@ -502,7 +503,6 @@
       };
       piggyMenu.appendChild(addBtn);
 
-      // Eliminar hucha actual si hay más de una
       if(Object.keys(piggies).length > 1){
         const delBtn = document.createElement('button');
         delBtn.textContent = '🗑️ Eliminar hucha actual';
@@ -530,6 +530,7 @@
         piggyMenu.style.display = 'none';
         settingsMenu.style.display = 'none';
         hideAddButtons();
+        hideChart();
       }
     }
 
@@ -548,6 +549,7 @@
         piggyMenu.style.display = 'none';
         settingsMenu.style.display = 'none';
         historyBox.style.display = 'none';
+        hideChart();
       }
     };
 
@@ -591,67 +593,75 @@
       setName(goalName.value);
     };
 
-    // Gráfico mejorado
+    // Gráfico con progreso acumulado
     function updateChart() {
       const p = piggies[currentPiggyId];
-      if (!p) return;
+      if(!p) return;
 
-      // Acumular movimientos por fecha
-      const dataMap = {};
-      p.history.forEach(item => {
-        const dateStr = new Date(item.date).toLocaleDateString();
-        dataMap[dateStr] = (dataMap[dateStr] || 0) + item.amount;
+      // Ordenamos la historia por fecha ascendente para gráfica correcta
+      const sortedHistory = p.history.slice().sort((a,b) => a.date - b.date);
+
+      const labels = [];
+      const data = [];
+      let acumulado = 0;
+
+      sortedHistory.forEach(item => {
+        const d = new Date(item.date);
+        labels.push(d.toLocaleDateString());
+        acumulado += item.amount;
+        data.push(acumulado);
       });
-
-      // Ordenar fechas y preparar datos acumulativos
-      const sortedDates = Object.keys(dataMap).sort((a, b) => new Date(a) - new Date(b));
-      let cumulative = 0;
-      const data = sortedDates.map(date => (cumulative += dataMap[date]));
 
       const ctx = document.getElementById('progressChart').getContext('2d');
 
-      if (chart) {
-        chart.destroy();
-      }
-
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: sortedDates,
-          datasets: [{
-            label: `Progreso - ${p.name}`,
-            data: data,
-            borderColor: 'green',
-            backgroundColor: 'rgba(0, 128, 0, 0.2)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 4,
-            pointHoverRadius: 7,
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
+      if(chart){
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = data;
+        chart.update();
+      } else {
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Saldo acumulado (€)',
+              data: data,
+              borderColor: 'green',
+              backgroundColor: 'rgba(0,128,0,0.2)',
+              fill: true,
+              tension: 0.2,
+              pointRadius: 3,
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
           }
-        }
-      });
+        });
+      }
     }
 
-    // Botón Ver progreso actualizado
+    function hideChart() {
+      const canvas = document.getElementById('progressChart');
+      canvas.style.display = 'none';
+    }
+
+    // Botón Ver progreso (mostrar/ocultar gráfica)
     showProgressBtn.onclick = () => {
       const canvas = document.getElementById('progressChart');
-      if (canvas.style.display === 'block') {
+      if(canvas.style.display === 'block'){
         canvas.style.display = 'none';
-        if (chart) {
-          chart.destroy();
-          chart = null;
-        }
       } else {
         updateChart();
         canvas.style.display = 'block';
         settingsMenu.style.display = 'none';
         piggyMenu.style.display = 'none';
+        historyBox.style.display = 'none';
         hideAddButtons();
       }
     };
