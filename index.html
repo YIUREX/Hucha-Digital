@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hucha Digital</title>
 
-  <!-- Fuente Rubik Bold -->
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700&display=swap" rel="stylesheet" />
 
   <style>
@@ -163,11 +162,34 @@
       top: 20px;
       left: 20px;
     }
+
+    #settingsMenu, #piggyMenu {
+      position: fixed;
+      background: white;
+      border: 2px solid black;
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      border-radius: 8px;
+      color: black;
+    }
+    #settingsMenu {
+      bottom: 70px;
+      right: 20px;
+    }
+    #piggyMenu {
+      top: 60px;
+      left: 20px;
+    }
   </style>
 </head>
 <body>
-  <div class="piggy-menu-icon" title="Menú de huchas">☰</div>
-  <div class="settings-icon" title="Ajustes">⚙️</div>
+  <div class="piggy-menu-icon" title="Menú de huchas" onclick="togglePiggyMenu()">☰</div>
+  <div class="settings-icon" title="Ajustes" onclick="toggleSettingsMenu()">⚙️</div>
+
+  <div id="piggyMenu">Aquí irán las opciones de huchas</div>
+  <div id="settingsMenu">Aquí irán las opciones de ajustes</div>
 
   <div class="wrapper">
     <div class="goal-container">
@@ -206,6 +228,8 @@
     const goalInput = document.getElementById('goalInput');
     const goalFill = document.getElementById('goalFill');
     const goalName = document.getElementById('goalName');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const piggyMenu = document.getElementById('piggyMenu');
 
     let total = 0;
     let goal = 0;
@@ -267,11 +291,20 @@
     };
 
     goalName.oninput = () => {
-      // Para guardar el nombre en localStorage si se desea
+      // Aquí se puede guardar el nombre si se desea
     };
+
+    function toggleSettingsMenu() {
+      settingsMenu.style.display = settingsMenu.style.display === 'flex' ? 'none' : 'flex';
+      piggyMenu.style.display = 'none';
+    }
+
+    function togglePiggyMenu() {
+      piggyMenu.style.display = piggyMenu.style.display === 'flex' ? 'none' : 'flex';
+      settingsMenu.style.display = 'none';
+    }
 
     updateUI();
   </script>
 </body>
 </html>
-
