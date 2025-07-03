@@ -31,9 +31,9 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      width: 100%;
       padding: 1rem;
       box-sizing: border-box;
+      width: 100%;
     }
 
     .goal-container {
@@ -159,9 +159,10 @@
       background: transparent;
       color: inherit;
       border-radius: 6px;
+      margin-right: 6px;
     }
 
-    /* Iconos fijos */
+    /* Iconos fijos sin círculo */
     .settings-icon, .piggy-menu-icon {
       position: fixed;
       font-size: 2em;
@@ -169,19 +170,9 @@
       user-select: none;
       color: inherit;
       z-index: 100;
-      background: white;
-      border: 2px solid black;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background-color 0.3s, color 0.3s;
-    }
-    .settings-icon:hover, .piggy-menu-icon:hover {
-      background-color: black;
-      color: white;
+      background: none;
+      border: none;
+      padding: 0;
     }
     .settings-icon {
       bottom: 20px;
@@ -192,43 +183,41 @@
       left: 20px;
     }
 
-    /* Menús flotantes */
-    #settingsMenu, #piggyMenu, #historyBox, #progressChartContainer {
+    /* Menú ajustes */
+    #settingsMenu {
       position: fixed;
+      bottom: 70px;
+      right: 20px;
       background: white;
       border: 2px solid black;
-      border-radius: 8px;
       padding: 12px;
-      color: black;
       display: none;
+      flex-direction: column;
+      gap: 8px;
       max-width: 280px;
-      max-height: 350px;
-      overflow-y: auto;
-      z-index: 110;
-      box-sizing: border-box;
+      color: black;
+      border-radius: 8px;
+      user-select: none;
+      z-index: 101;
     }
-    body.dark #settingsMenu, body.dark #piggyMenu, body.dark #historyBox, body.dark #progressChartContainer {
+    body.dark #settingsMenu {
       background: #222;
       color: white;
       border-color: white;
     }
-
-    #settingsMenu {
-      bottom: 70px;
-      right: 20px;
-      flex-direction: column;
-      gap: 8px;
+    #settingsMenu strong {
+      font-size: 1.1em;
+      margin-top: 6px;
     }
     #settingsMenu button {
-      width: 100%;
-      padding: 8px;
-      font-weight: 700;
+      padding: 6px 10px;
       font-size: 1em;
       cursor: pointer;
-      border: 1px solid currentColor;
-      border-radius: 6px;
       background: none;
+      border: 1px solid currentColor;
       color: inherit;
+      font-weight: 700;
+      border-radius: 6px;
       transition: background-color 0.3s, color 0.3s;
     }
     #settingsMenu button:hover {
@@ -239,17 +228,35 @@
     #settingsMenu hr {
       border-color: currentColor;
       margin: 8px 0;
+      border-style: solid;
+      border-width: 1px 0 0 0;
     }
 
+    /* Menú huchas */
     #piggyMenu {
+      position: fixed;
       top: 60px;
       left: 20px;
+      background: white;
+      border: 2px solid black;
+      padding: 12px;
+      display: none;
       flex-direction: column;
       gap: 8px;
+      max-height: 300px;
+      overflow-y: auto;
       width: 220px;
+      border-radius: 8px;
+      color: black;
+      user-select: none;
+      z-index: 101;
+    }
+    body.dark #piggyMenu {
+      background: #222;
+      color: white;
+      border-color: white;
     }
     #piggyMenu button {
-      width: 100%;
       background: none;
       border: 1px solid currentColor;
       padding: 8px;
@@ -265,30 +272,49 @@
       filter: invert(1);
     }
 
+    /* Historial */
     #historyBox {
+      position: fixed;
       top: 20px;
       right: 20px;
-      font-size: 0.9em;
       max-height: 320px;
       width: 280px;
+      overflow-y: auto;
+      background: rgba(255,255,255,0.95);
+      border: 2px solid black;
+      padding: 12px;
+      font-size: 0.9em;
+      display: none;
+      border-radius: 8px;
+      color: black;
+      user-select: none;
+      z-index: 101;
+    }
+    body.dark #historyBox {
+      background: #222;
+      color: white;
+      border-color: white;
     }
 
-    #progressChartContainer {
-      top: 20px;
-      right: 20px;
-      max-height: 350px;
-      width: 280px;
-      padding: 10px 5px;
-      box-sizing: border-box;
-    }
+    /* Gráfico */
     #progressChart {
-      width: 100% !important;
-      height: 250px !important;
+      max-width: 90vw;
+      max-height: 250px;
+      margin: 10px auto 0;
+      display: none;
+      user-select: none;
+      border: 2px solid black;
+      border-radius: 8px;
+      background: white;
+      z-index: 101;
+    }
+    body.dark #progressChart {
+      background: #222;
+      border-color: white;
     }
   </style>
 </head>
 <body>
-
   <!-- Iconos fijos -->
   <div class="piggy-menu-icon" title="Menú de huchas" onclick="togglePiggyMenu()">☰</div>
   <div class="settings-icon" title="Ajustes" onclick="toggleSettings()">⚙️</div>
@@ -317,228 +343,132 @@
       <button id="editBtn">Editar total</button>
       <button id="resetBtn" style="color:red;">Reiniciar</button>
     </div>
-  </div>
 
-  <!-- Menú Huchas -->
-  <div id="piggyMenu"></div>
-
-  <!-- Menú Ajustes -->
-  <div id="settingsMenu">
-    <strong>🎵 Sonido:</strong><br />
-    <button data-sound="coin" onclick="setSound('coin')">Sonido 1</button>
-    <button data-sound="bell" onclick="setSound('bell')">Sonido 2</button>
-    <button data-sound="none" onclick="setSound('none')">Silencio</button>
-    <hr />
-    <strong>🌓 Modo:</strong><br />
-    <button onclick="toggleDarkMode()">Alternar modo oscuro</button>
-    <hr />
-    <strong>📜 Historial:</strong><br />
-    <button onclick="toggleHistory()">Ver historial</button>
-    <button onclick="toggleProgress()">Ver progreso</button>
-  </div>
-
-  <!-- Historial -->
-  <div id="historyBox"></div>
-
-  <!-- Gráfica de progreso -->
-  <div id="progressChartContainer">
     <canvas id="progressChart"></canvas>
   </div>
 
-<script>
-  // Variables y elementos
-  const counter = document.getElementById('counter');
-  const toggleAddBtn = document.getElementById('toggleAdd');
-  const addButtonsDiv = document.getElementById('addButtons');
-  const customInput = document.getElementById('custom');
-  const addCustomBtn = document.getElementById('addCustomBtn');
-  const editBtn = document.getElementById('editBtn');
-  const resetBtn = document.getElementById('resetBtn');
-  const goalInput = document.getElementById('goalInput');
-  const goalFill = document.getElementById('goalFill');
-  const goalName = document.getElementById('goalName');
-  const settingsMenu = document.getElementById('settingsMenu');
-  const piggyMenu = document.getElementById('piggyMenu');
-  const historyBox = document.getElementById('historyBox');
-  const progressChartContainer = document.getElementById('progressChartContainer');
-  const progressChartCanvas = document.getElementById('progressChart');
+  <!-- Menú ajustes -->
+  <div id="settingsMenu" aria-label="Menú de Ajustes">
+    <strong>🎵 Sonido:</strong>
+    <button id="sound1Btn">Sonido 1</button>
+    <button id="sound2Btn">Sonido 2</button>
+    <button id="muteBtn">Silencio</button>
 
-  let total = 0;
-  let goal = 0;
-  let currentPiggy = 0;
-  let piggies = [];
-  let history = [];
-  let soundSetting = 'coin'; // default sound
-  let chart = null;
-  let darkMode = false;
-  let historyVisible = false;
-  let progressVisible = false;
+    <hr/>
 
-  // Audios
-  const sounds = {
-    coin: new Audio('https://actions.google.com/sounds/v1/coins/coin_drop.ogg'),
-    bell: new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg')
-  };
+    <strong>🌓 Modo:</strong>
+    <button id="toggleDarkModeBtn">Alternar modo oscuro</button>
 
-  // Evitar volumen muy alto y permitir reproducir (Chrome y otros requieren interacción)
-  for(let key in sounds) {
-    sounds[key].volume = 0.4;
-    sounds[key].load();
-  }
+    <hr/>
 
-  // Guardar y cargar configuración y datos localStorage
-  function saveToLocalStorage() {
-    localStorage.setItem('piggies', JSON.stringify(piggies));
-    localStorage.setItem('currentPiggy', currentPiggy);
-    localStorage.setItem('history', JSON.stringify(history));
-    localStorage.setItem('soundSetting', soundSetting);
-    localStorage.setItem('darkMode', darkMode ? '1' : '0');
-  }
-  function loadFromLocalStorage() {
-    const savedPiggies = localStorage.getItem('piggies');
-    if(savedPiggies) piggies = JSON.parse(savedPiggies);
-    else piggies = [{name:'Hucha 1', total:0, goal:0}];
-    const savedCurrent = localStorage.getItem('currentPiggy');
-    currentPiggy = savedCurrent !== null ? parseInt(savedCurrent) : 0;
-    const savedHistory = localStorage.getItem('history');
-    if(savedHistory) history = JSON.parse(savedHistory);
-    else history = [];
-    const savedSound = localStorage.getItem('soundSetting');
-    if(savedSound) soundSetting = savedSound;
-    const savedDark = localStorage.getItem('darkMode');
-    darkMode = savedDark === '1';
-    if(darkMode) document.body.classList.add('dark');
-  }
+    <strong>📜 Historial:</strong>
+    <button id="viewHistoryBtn">Ver historial</button>
+    <button id="viewProgressBtn">Ver progreso</button>
+  </div>
 
-  // Actualizar UI general con datos de la hucha activa
-  function updateUI() {
-    if(!piggies[currentPiggy]) return;
-    const piggy = piggies[currentPiggy];
-    total = piggy.total;
-    goal = piggy.goal;
-    goalName.value = piggy.name;
-    goalInput.value = goal > 0 ? goal : '';
-    counter.textContent = `€${total.toFixed(2)}`;
-    if (goal > 0) {
-      const pct = Math.min((total / goal) * 100, 100);
-      goalFill.style.width = pct + '%';
-    } else {
-      goalFill.style.width = '0%';
-    }
-  }
+  <!-- Menú huchas -->
+  <div id="piggyMenu" aria-label="Menú de Huchas">
+    <!-- Aquí se mostrarán las huchas si añades funcionalidad para varias -->
+    <em>Aún no hay otras huchas.</em>
+  </div>
 
-  // Guardar datos actuales hucha en piggies
-  function saveCurrentPiggy() {
-    if(!piggies[currentPiggy]) return;
-    piggies[currentPiggy].total = total;
-    piggies[currentPiggy].goal = goal;
-    piggies[currentPiggy].name = goalName.value.trim() || 'Hucha ' + (currentPiggy + 1);
-  }
+  <!-- Historial -->
+  <div id="historyBox" aria-label="Historial de movimientos">
+    <strong>Historial:</strong>
+    <ul id="historyList" style="padding-left:1.2em; margin-top:6px;"></ul>
+  </div>
 
-  // Actualizar menú huchas
-  function renderPiggyMenu() {
-    piggyMenu.innerHTML = '';
-    piggies.forEach((p, i) => {
-      const btn = document.createElement('button');
-      btn.textContent = (i === currentPiggy ? '👉 ' : '') + p.name;
-      btn.onclick = () => {
-        saveCurrentPiggy();
-        currentPiggy = i;
-        updateUI();
-        renderPiggyMenu();
-        hideHistory();
-        hideProgress();
-        saveToLocalStorage();
-      };
-      piggyMenu.appendChild(btn);
-    });
-    // Añadir botón nueva hucha
-    const newBtn = document.createElement('button');
-    newBtn.textContent = '+ Nueva Hucha';
-    newBtn.style.fontWeight = 'bold';
-    newBtn.onclick = () => {
-      saveCurrentPiggy();
-      piggies.push({name:'Hucha ' + (piggies.length +1), total:0, goal:0});
-      currentPiggy = piggies.length -1;
-      updateUI();
-      renderPiggyMenu();
-      hideHistory();
-      hideProgress();
-      saveToLocalStorage();
-    };
-    piggyMenu.appendChild(newBtn);
-  }
+  <script>
+    // Variables globales
+    const counter = document.getElementById('counter');
+    const toggleAddBtn = document.getElementById('toggleAdd');
+    const addButtonsDiv = document.getElementById('addButtons');
+    const customInput = document.getElementById('custom');
+    const addCustomBtn = document.getElementById('addCustomBtn');
+    const editBtn = document.getElementById('editBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const goalInput = document.getElementById('goalInput');
+    const goalFill = document.getElementById('goalFill');
+    const goalName = document.getElementById('goalName');
+    const piggyMenuBtn = document.querySelector('.piggy-menu-icon');
+    const settingsBtn = document.querySelector('.settings-icon');
+    const settingsMenu = document.getElementById('settingsMenu');
+    const piggyMenu = document.getElementById('piggyMenu');
+    const historyBox = document.getElementById('historyBox');
+    const historyList = document.getElementById('historyList');
+    const progressChartEl = document.getElementById('progressChart');
 
-  // Toggle menú huchas
-  function togglePiggyMenu() {
-    if(piggyMenu.style.display === 'flex') {
-      piggyMenu.style.display = 'none';
-    } else {
-      piggyMenu.style.display = 'flex';
-      piggyMenu.style.flexDirection = 'column';
-      piggyMenu.style.gap = '8px';
-      piggyMenu.style.maxHeight = '350px';
-      piggyMenu.style.overflowY = 'auto';
-      settingsMenu.style.display = 'none';
-      historyBox.style.display = 'none';
-      progressChartContainer.style.display = 'none';
-      historyVisible = false;
-      progressVisible = false;
-    }
-  }
+    let total = 0;
+    let goal = 0;
+    let goalTitle = '';
+    let history = [];
+    let soundMode = 'sound1'; // sound1, sound2, mute
+    let darkMode = false;
+    let chart = null;
 
-  // Toggle menú ajustes
-  function toggleSettings() {
-    if(settingsMenu.style.display === 'flex') {
-      settingsMenu.style.display = 'none';
-    } else {
-      settingsMenu.style.display = 'flex';
-      settingsMenu.style.flexDirection = 'column';
-      settingsMenu.style.gap = '8px';
-      piggyMenu.style.display = 'none';
-      historyBox.style.display = 'none';
-      progressChartContainer.style.display = 'none';
-      historyVisible = false;
-      progressVisible = false;
-      updateSettingsButtons();
-    }
-  }
+    // Sonidos
+    const sound1 = new Audio('https://actions.google.com/sounds/v1/coins/coin_drop.ogg');
+    const sound2 = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
 
-  // Actualizar botones de sonido para reflejar seleccionado
-  function updateSettingsButtons() {
-    const buttons = settingsMenu.querySelectorAll('button[data-sound]');
-    buttons.forEach(b => {
-      if(b.getAttribute('data-sound') === soundSetting) {
-        b.style.fontWeight = '900';
-        b.style.textDecoration = 'underline';
-      } else {
-        b.style.fontWeight = '700';
-        b.style.textDecoration = 'none';
+    // --- LOCAL STORAGE ---
+    function loadStorage() {
+      const data = localStorage.getItem('huchaData');
+      if (data) {
+        try {
+          const obj = JSON.parse(data);
+          total = obj.total || 0;
+          goal = obj.goal || 0;
+          goalTitle = obj.goalTitle || '';
+          history = obj.history || [];
+          soundMode = obj.soundMode || 'sound1';
+          darkMode = obj.darkMode || false;
+        } catch {
+          total = 0; goal = 0; goalTitle = ''; history = [];
+          soundMode = 'sound1';
+          darkMode = false;
+        }
       }
-    });
-  }
+    }
+    function saveStorage() {
+      const obj = { total, goal, goalTitle, history, soundMode, darkMode };
+      localStorage.setItem('huchaData', JSON.stringify(obj));
+    }
 
-  // Establecer sonido
-  function setSound(sound) {
-    soundSetting = sound;
-    saveToLocalStorage();
-    updateSettingsButtons();
-  }
+    // --- UI UPDATE ---
+    function updateUI() {
+      counter.textContent = `€${total.toFixed(2)}`;
+      goalInput.value = goal > 0 ? goal : '';
+      goalName.value = goalTitle;
 
-  // Toggle modo oscuro
-  function toggleDarkMode() {
-    darkMode = !darkMode;
-    if(darkMode) document.body.classList.add('dark');
-    else document.body.classList.remove('dark');
-    saveToLocalStorage();
-  }
+      if (goal > 0) {
+        const pct = Math.min((total / goal) * 100, 100);
+        goalFill.style.width = pct + '%';
+      } else {
+        goalFill.style.width = '0%';
+      }
 
-  // Añadir evento a botones cantidad fija
-  function setupAddButtons() {
-    document.querySelectorAll('#addButtons button[data-amount]').forEach(btn => {
+      updateChart();
+      saveStorage();
+    }
+
+    // --- TOGGLE ADD BUTTONS ---
+    toggleAddBtn.onclick = () => {
+      if (addButtonsDiv.style.display === 'flex') {
+        addButtonsDiv.style.display = 'none';
+        toggleAddBtn.textContent = 'Meter a la hucha';
+      } else {
+        addButtonsDiv.style.display = 'flex';
+        toggleAddBtn.textContent = 'Cerrar';
+      }
+    };
+
+    // --- ADD AMOUNTS BUTTONS ---
+    addButtonsDiv.querySelectorAll('button[data-amount]').forEach(btn => {
       btn.onclick = () => {
         const amount = parseFloat(btn.getAttribute('data-amount'));
-        addAmount(amount);
+        if (!isNaN(amount) && amount > 0) {
+          addAmount(amount);
+        }
       };
     });
 
@@ -550,193 +480,220 @@
       }
     };
 
+    function addAmount(amount) {
+      total += amount;
+      addHistory(`Añadido €${amount.toFixed(2)}`);
+      playSound();
+      updateUI();
+    }
+
     editBtn.onclick = () => {
       const val = prompt('Nuevo total (€):', total);
       const num = parseFloat(val);
       if (!isNaN(num) && num >= 0) {
         total = num;
-        saveCurrentPiggy();
-        addToHistory('Editar total', num);
+        addHistory(`Total editado a €${total.toFixed(2)}`);
         updateUI();
-        saveToLocalStorage();
       }
     };
 
     resetBtn.onclick = () => {
       if (confirm('¿Reiniciar la hucha?')) {
+        addHistory(`Hucha reiniciada (antes €${total.toFixed(2)})`);
         total = 0;
-        saveCurrentPiggy();
-        addToHistory('Reiniciar hucha', 0);
         updateUI();
-        saveToLocalStorage();
       }
     };
 
-    toggleAddBtn.onclick = () => {
-      if(addButtonsDiv.style.display === 'flex') {
-        addButtonsDiv.style.display = 'none';
-        toggleAddBtn.textContent = 'Meter a la hucha';
+    goalInput.oninput = () => {
+      const val = parseFloat(goalInput.value);
+      goal = isNaN(val) ? 0 : val;
+      saveGoal();
+      updateUI();
+    };
+    goalName.oninput = () => {
+      goalTitle = goalName.value.trim();
+      saveGoal();
+      updateUI();
+    };
+
+    function saveGoal() {
+      // Save goal and title also in storage
+      saveStorage();
+    }
+
+    // --- History management ---
+    function addHistory(entry) {
+      const now = new Date();
+      const timestamp = now.toLocaleString();
+      history.unshift(`[${timestamp}] ${entry}`);
+      if (history.length > 100) history.pop(); // limit history
+      saveStorage();
+      if (historyBox.style.display === 'block') renderHistory();
+    }
+
+    function renderHistory() {
+      historyList.innerHTML = '';
+      history.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        historyList.appendChild(li);
+      });
+    }
+
+    // --- Sound control ---
+    function playSound() {
+      if (soundMode === 'mute') return;
+      if (soundMode === 'sound1') {
+        sound1.currentTime = 0;
+        sound1.play();
+      } else if (soundMode === 'sound2') {
+        sound2.currentTime = 0;
+        sound2.play();
+      }
+    }
+
+    // --- Dark mode ---
+    function applyDarkMode() {
+      if (darkMode) {
+        document.body.classList.add('dark');
       } else {
-        addButtonsDiv.style.display = 'flex';
-        toggleAddBtn.textContent = 'Cerrar';
+        document.body.classList.remove('dark');
+      }
+      saveStorage();
+    }
+
+    // --- Menús ---
+    function toggleSettings() {
+      if (settingsMenu.style.display === 'flex') {
+        settingsMenu.style.display = 'none';
+      } else {
+        settingsMenu.style.display = 'flex';
+        piggyMenu.style.display = 'none';
+        historyBox.style.display = 'none';
+        progressChartEl.style.display = 'none';
+      }
+    }
+    function togglePiggyMenu() {
+      if (piggyMenu.style.display === 'flex') {
+        piggyMenu.style.display = 'none';
+      } else {
+        piggyMenu.style.display = 'flex';
+        settingsMenu.style.display = 'none';
+        historyBox.style.display = 'none';
+        progressChartEl.style.display = 'none';
+      }
+    }
+
+    // --- Settings menu buttons ---
+    document.getElementById('sound1Btn').onclick = () => {
+      soundMode = 'sound1';
+      alert('Sonido 1 activado');
+      saveStorage();
+    };
+    document.getElementById('sound2Btn').onclick = () => {
+      soundMode = 'sound2';
+      alert('Sonido 2 activado');
+      saveStorage();
+    };
+    document.getElementById('muteBtn').onclick = () => {
+      soundMode = 'mute';
+      alert('Silencio activado');
+      saveStorage();
+    };
+    document.getElementById('toggleDarkModeBtn').onclick = () => {
+      darkMode = !darkMode;
+      applyDarkMode();
+    };
+    document.getElementById('viewHistoryBtn').onclick = () => {
+      historyBox.style.display = historyBox.style.display === 'block' ? 'none' : 'block';
+      settingsMenu.style.display = 'none';
+      piggyMenu.style.display = 'none';
+      progressChartEl.style.display = 'none';
+      if (historyBox.style.display === 'block') renderHistory();
+    };
+    document.getElementById('viewProgressBtn').onclick = () => {
+      progressChartEl.style.display = progressChartEl.style.display === 'block' ? 'none' : 'block';
+      settingsMenu.style.display = 'none';
+      piggyMenu.style.display = 'none';
+      historyBox.style.display = 'none';
+    };
+
+    // --- Chart.js Setup ---
+    function updateChart() {
+      if (!chart) {
+        const ctx = progressChartEl.getContext('2d');
+        chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: history.slice(0, 10).map(h => {
+              const parts = h.match(/^\[(.+?)\]/);
+              return parts ? parts[1].split(',')[0] : '';
+            }).reverse(),
+            datasets: [{
+              label: 'Total €',
+              data: history.slice(0, 10).map(h => {
+                const m = h.match(/€(\d+(\.\d+)?)/g);
+                if (!m) return null;
+                // Take last number in entry as total (edit or reset changes)
+                const lastNum = m[m.length -1];
+                return parseFloat(lastNum.replace('€','')) || null;
+              }).reverse(),
+              fill: false,
+              borderColor: 'green',
+              tension: 0.3,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+            }]
+          },
+          options: {
+            responsive: true,
+            animation: { duration: 600 },
+            scales: {
+              y: {
+                beginAtZero: true,
+                suggestedMax: goal > 0 ? goal * 1.1 : undefined
+              }
+            }
+          }
+        });
+      } else {
+        // Actualizar datos
+        chart.data.labels = history.slice(0, 10).map(h => {
+          const parts = h.match(/^\[(.+?)\]/);
+          return parts ? parts[1].split(',')[0] : '';
+        }).reverse();
+        chart.data.datasets[0].data = history.slice(0, 10).map(h => {
+          const m = h.match(/€(\d+(\.\d+)?)/g);
+          if (!m) return null;
+          const lastNum = m[m.length -1];
+          return parseFloat(lastNum.replace('€','')) || null;
+        }).reverse();
+        chart.options.scales.y.suggestedMax = goal > 0 ? goal * 1.1 : undefined;
+        chart.update();
+      }
+    }
+
+    // --- Inicialización ---
+    loadStorage();
+    updateUI();
+    applyDarkMode();
+
+    // Cerrar menús si se hace clic fuera
+    window.onclick = function(event) {
+      if (!event.target.closest('#settingsMenu') && !event.target.closest('.settings-icon')) {
+        settingsMenu.style.display = 'none';
+      }
+      if (!event.target.closest('#piggyMenu') && !event.target.closest('.piggy-menu-icon')) {
+        piggyMenu.style.display = 'none';
+      }
+      if (!event.target.closest('#historyBox') && !event.target.closest('#viewHistoryBtn')) {
+        historyBox.style.display = 'none';
+      }
+      if (!event.target.closest('#progressChart') && !event.target.closest('#viewProgressBtn')) {
+        progressChartEl.style.display = 'none';
       }
     };
-  }
-
-  // Añadir cantidad a total
-  function addAmount(amount) {
-    total += amount;
-    saveCurrentPiggy();
-    addToHistory('Añadido', amount);
-    updateUI();
-    saveToLocalStorage();
-    playSound();
-  }
-
-  // Reproducir sonido según configuración
-  function playSound() {
-    if(soundSetting === 'none') return;
-    const sound = sounds[soundSetting];
-    if(sound) {
-      sound.pause();
-      sound.currentTime = 0;
-      sound.play().catch(() => {}); // evitar error si autoplay bloqueado
-    }
-  }
-
-  // Historial (máximo 30 entradas)
-  function addToHistory(action, amount) {
-    const date = new Date().toLocaleString();
-    history.unshift({date, action, amount});
-    if(history.length > 30) history.pop();
-  }
-
-  // Mostrar/ocultar historial
-  function toggleHistory() {
-    if(historyVisible) {
-      hideHistory();
-    } else {
-      showHistory();
-    }
-  }
-  function showHistory() {
-    historyBox.style.display = 'block';
-    renderHistory();
-    historyVisible = true;
-    progressChartContainer.style.display = 'none';
-    progressVisible = false;
-  }
-  function hideHistory() {
-    historyBox.style.display = 'none';
-    historyVisible = false;
-  }
-  function renderHistory() {
-    if(history.length === 0) {
-      historyBox.innerHTML = '<em>No hay historial</em>';
-      return;
-    }
-    let html = '<strong>Historial de movimientos</strong><br><br><ul style="padding-left:20px;">';
-    history.forEach(item => {
-      html += `<li>[${item.date}] ${item.action}: €${item.amount.toFixed(2)}</li>`;
-    });
-    html += '</ul>';
-    historyBox.innerHTML = html;
-  }
-
-  // Mostrar/ocultar progreso (gráfica)
-  function toggleProgress() {
-    if(progressVisible) {
-      hideProgress();
-    } else {
-      showProgress();
-    }
-  }
-  function showProgress() {
-    progressChartContainer.style.display = 'block';
-    renderChart();
-    progressVisible = true;
-    historyBox.style.display = 'none';
-    historyVisible = false;
-  }
-  function hideProgress() {
-    progressChartContainer.style.display = 'none';
-    progressVisible = false;
-  }
-
-  // Crear gráfico con Chart.js
-  function renderChart() {
-    // Generar datos de historial de total acumulado
-    if(!history.length) {
-      if(chart) chart.destroy();
-      progressChartContainer.innerHTML = '<em>No hay datos para mostrar gráfico.</em>';
-      return;
-    }
-    // Construir array de fechas y acumulados
-    let labels = [];
-    let dataPoints = [];
-    let accum = 0;
-    // Recorremos en orden cronológico (historial está invertido)
-    for(let i = history.length -1; i >= 0; i--) {
-      accum += history[i].amount;
-      labels.push(history[i].date.split(',')[0]); // solo fecha sin hora para no saturar
-      dataPoints.push(accum);
-    }
-    // Añadimos punto actual si distinto último
-    if(dataPoints.length === 0 || dataPoints[dataPoints.length-1] !== total) {
-      labels.push('Ahora');
-      dataPoints.push(total);
-    }
-    // Si ya hay chart, destruir para crear nuevo
-    if(chart) chart.destroy();
-
-    chart = new Chart(progressChartCanvas, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [{
-          label: 'Saldo (€)',
-          data: dataPoints,
-          fill: true,
-          borderColor: 'green',
-          backgroundColor: 'rgba(0,128,0,0.2)',
-          tension: 0.3,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-          }
-        }
-      }
-    });
-  }
-
-  // Eventos inputs goal y name
-  goalInput.oninput = () => {
-    const val = parseFloat(goalInput.value);
-    goal = isNaN(val) ? 0 : val;
-    saveCurrentPiggy();
-    updateUI();
-    saveToLocalStorage();
-  };
-
-  goalName.oninput = () => {
-    saveCurrentPiggy();
-    saveToLocalStorage();
-  };
-
-  // Inicialización
-  loadFromLocalStorage();
-  updateUI();
-  renderPiggyMenu();
-  setupAddButtons();
-  updateSettingsButtons();
-
-</script>
+  </script>
 </body>
 </html>
