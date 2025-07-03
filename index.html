@@ -411,22 +411,6 @@
       };
       currentPiggyId = id;
       savePiggies();
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hucha Digital</title>
-
-  <!-- Fuente Rubik Bold -->
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@700&display=swap" rel="stylesheet" />
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Rubik', sans-serif;
-      background: white;
-      color: black;
-      transition: background 0.3s, color 0.3s;
-      overflow-x: hidden;
     }
   }
 
@@ -437,7 +421,7 @@
 
     goalName.value = piggy.name;
     goalInput.value = piggy.goal > 0 ? piggy.goal : '';
-    counter.textContent = `€${piggy.total.toFixed(2)}`;
+    counter.textContent = €${piggy.total.toFixed(2)};
 
     // Barra progreso
     if (piggy.goal > 0) {
@@ -445,9 +429,6 @@
       goalFill.style.width = pct + '%';
     } else {
       goalFill.style.width = '0%';
-    body.dark {
-      background: #121212;
-      color: #eee;
     }
 
     // Modo oscuro
@@ -455,15 +436,6 @@
       document.body.classList.add('dark');
     } else {
       document.body.classList.remove('dark');
-    .wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      width: 100%;
-      padding: 1rem;
-      box-sizing: border-box;
     }
 
     currentSound = piggy.sound || 'coin';
@@ -483,44 +455,6 @@
     if (chartInstance) {
       chartInstance.destroy();
       chartInstance = null;
-    .goal-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      width: 80%;
-      max-width: 320px;
-      margin-bottom: 8px;
-    }
-    .goal-label {
-      font-weight: 700;
-      font-size: 1.2em;
-    }
-    #goalInput {
-      font-size: 1.2em;
-      padding: 5px 8px;
-      width: 120px;
-      border: 2px solid black;
-      border-radius: 6px;
-      background: transparent;
-      color: inherit;
-      outline: none;
-    }
-    .goal-bar-bg {
-      width: 80%;
-      max-width: 320px;
-      height: 16px;
-      background: #ddd;
-      border-radius: 12px;
-      border: 2px solid black;
-      margin: 0 auto 15px;
-      overflow: hidden;
-    }
-    .goal-bar-fill {
-      height: 100%;
-      background: green;
-      width: 0%;
-      transition: width 0.6s ease;
     }
   }
 
@@ -543,19 +477,6 @@
     } else if (name === 'bell') {
       soundBell.currentTime = 0;
       soundBell.play();
-    #goalName {
-      font-size: 1.5em;
-      font-weight: 700;
-      border: 2px solid black;
-      border-radius: 6px;
-      padding: 5px 10px;
-      width: 80%;
-      max-width: 320px;
-      margin-bottom: 5px;
-      background: transparent;
-      color: inherit;
-      outline: none;
-      text-align: center;
     }
   }
 
@@ -567,22 +488,6 @@
     } else {
       addButtonsDiv.style.display = 'flex';
       toggleAddBtn.textContent = 'Cerrar';
-    #counter {
-      font-size: 3em;
-      margin-bottom: 15px;
-      user-select: none;
-    }
-    .pig {
-      font-size: 6em;
-      border: 5px solid black;
-      border-radius: 50%;
-      padding: 20px;
-      margin-bottom: 20px;
-      user-select: none;
-      color: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
   });
 
@@ -593,17 +498,6 @@
       addAmount(amount);
     });
   });
-    #toggleAdd {
-      font-weight: 700;
-      font-size: 1.2em;
-      margin-bottom: 15px;
-      padding: 10px 25px;
-      border: 2px solid black;
-      background: none;
-      cursor: pointer;
-      color: inherit;
-      max-width: 320px;
-    }
 
   // Añadir cantidad personalizada
   addCustomBtn.addEventListener('click', () => {
@@ -611,32 +505,6 @@
     if (!isNaN(val) && val > 0) {
       addAmount(val);
       customInput.value = '';
-    #addButtons {
-      display: none;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 12px;
-      max-width: 320px;
-      margin-bottom: 15px;
-    }
-    #addButtons button, #addCustomBtn, #editBtn, #resetBtn {
-      padding: 10px 20px;
-      font-size: 1em;
-      border: 2px solid black;
-      background: none;
-      cursor: pointer;
-      font-weight: 700;
-      color: inherit;
-    }
-    #custom {
-      padding: 10px;
-      font-size: 1em;
-      width: 80px;
-      text-align: center;
-      border: 2px solid black;
-      background: transparent;
-      color: inherit;
-      border-radius: 6px;
     }
   });
 
@@ -650,77 +518,8 @@
         piggy.total = val;
         savePiggies();
         updateUI();
-    .settings-icon, .piggy-menu-icon {
-      position: fixed;
-      font-size: 2em;
-      cursor: pointer;
-      user-select: none;
-      color: inherit;
-      z-index: 100;
-    }
-    .settings-icon {
-      bottom: 20px;
-      right: 20px;
-    }
-    .piggy-menu-icon {
-      top: 20px;
-      left: 20px;
-    }
-  </style>
-</head>
-<body>
-  <div class="piggy-menu-icon" title="Menú de huchas">☰</div>
-  <div class="settings-icon" title="Ajustes">⚙️</div>
-
-  <div class="wrapper">
-    <div class="goal-container">
-      <label for="goalInput" class="goal-label">🎯 Meta (€):</label>
-      <input id="goalInput" type="number" min="0" step="0.01" placeholder="Ej: 100" />
-    </div>
-
-    <div class="goal-bar-bg"><div id="goalFill" class="goal-bar-fill"></div></div>
-
-    <input id="goalName" type="text" placeholder="Nombre del ahorro (ej. Viaje)" maxlength="30" />
-
-    <div id="counter">€0.00</div>
-    <div class="pig">🐷</div>
-
-    <button id="toggleAdd">Meter a la hucha</button>
-
-    <div id="addButtons">
-      <button data-amount="1">+1€</button>
-      <button data-amount="5">+5€</button>
-      <button data-amount="10">+10€</button>
-      <input id="custom" type="number" placeholder="Otra" min="0.01" step="0.01" />
-      <button id="addCustomBtn">Añadir</button>
-      <button id="editBtn">Editar total</button>
-      <button id="resetBtn" style="color:red;">Reiniciar</button>
-    </div>
-  </div>
-
-  <script>
-    const counter = document.getElementById('counter');
-    const toggleAddBtn = document.getElementById('toggleAdd');
-    const addButtonsDiv = document.getElementById('addButtons');
-    const customInput = document.getElementById('custom');
-    const addCustomBtn = document.getElementById('addCustomBtn');
-    const editBtn = document.getElementById('editBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const goalInput = document.getElementById('goalInput');
-    const goalFill = document.getElementById('goalFill');
-    const goalName = document.getElementById('goalName');
-
-    let total = 0;
-    let goal = 0;
-
-    function updateUI() {
-      counter.textContent = `€${total.toFixed(2)}`;
-      if (goal > 0) {
-        const pct = Math.min((total / goal) * 100, 100);
-        goalFill.style.width = pct + '%';
       } else {
         alert('Valor no válido.');
-        goalFill.style.width = '0%';
       }
     }
   });
@@ -766,10 +565,6 @@
       toggleAddBtn.textContent = 'Meter a la hucha';
     }
   }
-    toggleAddBtn.onclick = () => {
-      addButtonsDiv.style.display = addButtonsDiv.style.display === 'flex' ? 'none' : 'flex';
-      toggleAddBtn.textContent = addButtonsDiv.style.display === 'flex' ? 'Cerrar' : 'Meter a la hucha';
-    };
 
   function updatePiggyList() {
     piggyMenu.innerHTML = '';
@@ -778,7 +573,6 @@
       const btn = document.createElement('button');
       btn.textContent = p.name;
       btn.style.fontWeight = (id === currentPiggyId) ? 'bold' : 'normal';
-    document.querySelectorAll('[data-amount]').forEach(btn => {
       btn.onclick = () => {
         currentPiggyId = id;
         savePiggies();
@@ -793,20 +587,15 @@
     newBtn.style.color = 'green';
     newBtn.onclick = () => {
       let i = 1;
-      while (Object.values(piggies).some(p => p.name === `Hucha ${i}`)) i++;
+      while (Object.values(piggies).some(p => p.name === Hucha ${i})) i++;
       const newId = 'piggy_' + Date.now();
       piggies[newId] = {
-        name: `Hucha ${i}`,
+        name: Hucha ${i},
         total: 0,
         goal: 0,
         history: [],
         sound: currentSound,
         dark: piggies[currentPiggyId]?.dark || false
-        const amount = parseFloat(btn.getAttribute('data-amount'));
-        if (!isNaN(amount)) {
-          total += amount;
-          updateUI();
-        }
       };
       currentPiggyId = newId;
       savePiggies();
@@ -814,7 +603,6 @@
       piggyMenu.style.display = 'none';
     };
     piggyMenu.appendChild(newBtn);
-    });
 
     // Botón romper hucha
     const breakBtn = document.createElement('button');
@@ -839,11 +627,6 @@
           currentPiggyId = defaultId;
         }
         savePiggies();
-    addCustomBtn.onclick = () => {
-      const val = parseFloat(customInput.value);
-      if (!isNaN(val) && val > 0) {
-        total += val;
-        customInput.value = '';
         updateUI();
         piggyMenu.style.display = 'none';
       }
@@ -891,14 +674,8 @@
         historyBox.innerHTML = piggy.history
           .slice()
           .reverse()
-          .map(h => `+€${h.amount.toFixed(2)} - ${new Date(h.date).toLocaleString()}`)
+          .map(h => +€${h.amount.toFixed(2)} - ${new Date(h.date).toLocaleString()})
           .join('<br>');
-    editBtn.onclick = () => {
-      const val = prompt('Nuevo total (€):', total);
-      const num = parseFloat(val);
-      if (!isNaN(num) && num >= 0) {
-        total = num;
-        updateUI();
       }
       historyBox.style.display = 'block';
       piggyMenu.style.display = 'none';
@@ -908,7 +685,6 @@
       progressChart.style.display = 'none';
     }
   }
-    };
 
   // Progreso con gráfico
   function toggleProgress() {
@@ -917,10 +693,6 @@
       if (chartInstance) {
         chartInstance.destroy();
         chartInstance = null;
-    resetBtn.onclick = () => {
-      if (confirm('¿Reiniciar la hucha?')) {
-        total = 0;
-        updateUI();
       }
     } else {
       showProgress();
@@ -953,14 +725,13 @@
 
     const ctx = progressChart.getContext('2d');
     if (chartInstance) chartInstance.destroy();
-    };
 
     chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
         labels,
         datasets: [{
-          label: `Ahorro - ${piggy.name}`,
+          label: Ahorro - ${piggy.name},
           data,
           borderColor: 'green',
           backgroundColor: 'rgba(0,128,0,0.2)',
@@ -978,21 +749,11 @@
       }
     });
   }
-    goalInput.oninput = () => {
-      const val = parseFloat(goalInput.value);
-      goal = isNaN(val) ? 0 : val;
-      updateUI();
-    };
 
   // Inicialización
   loadPiggies();
   updateUI();
-    goalName.oninput = () => {
-      // Para guardar el nombre en localStorage si se desea
-    };
 
 </script>
-    updateUI();
-  </script>
 </body>
 </html>
