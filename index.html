@@ -709,13 +709,19 @@ body.dark .modal-buttons button {
     // Editar total
     editBtn.onclick = () => {
   const current = piggies[currentPiggyId].total.toFixed(2);
-  showInputModal('Editar total (€):', current, (val) => {
-    const num = parseFloat(val);
-    if (!isNaN(num) && num >= 0) {
-      editTotal(num);
-    }
+  showModal({
+    message: 'Editar total (€):',
+    placeholder: 'Cantidad',
+    onConfirm: (val) => {
+      const num = parseFloat(val);
+      if (!isNaN(num) && num >= 0) {
+        editTotal(num);
+      }
+    },
+    showInput: true,
   });
 };
+
 
 
     // Reiniciar hucha
@@ -833,33 +839,6 @@ function showModal({ message = '', placeholder = '', onConfirm = () => {}, showI
     onConfirm(value);
   };
 }
-// MODAL BONITO reutilizable
-function showModal({ message, placeholder = '', initialValue = '', onConfirm, onCancel }) {
-  // Crear overlay y caja modal
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-
-  const box = document.createElement('div');
-  box.className = 'modal-box';
-
-  const msg = document.createElement('div');
-  msg.className = 'modal-message';
-  msg.textContent = message;
-
-  const input = document.createElement('input');
-  input.className = 'modal-input';
-  input.placeholder = placeholder;
-  input.value = initialValue;
-
-  const buttons = document.createElement('div');
-  buttons.className = 'modal-buttons';
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.textContent = 'Cancelar';
-  cancelBtn.onclick = () => {
-    document.body.removeChild(overlay);
-    if (onCancel) onCancel();
-  };
 
   const okBtn = document.createElement('button');
   okBtn.textContent = 'Aceptar';
