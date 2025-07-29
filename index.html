@@ -236,133 +236,6 @@
       user-select:none;
       z-index: 98;
     }
-    /* Estilos para el modal bonito de editar total */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: white;
-  color: black;
-  padding: 20px;
-  border-radius: 10px;
-  border: 2px solid black;
-  width: 90%;
-  max-width: 300px;
-  text-align: center;
-}
-
-body.dark .modal-content {
-  background: #222;
-  color: #eee;
-}
-
-.modal-content input {
-  width: 80%;
-  padding: 10px;
-  margin: 10px 0;
-  font-size: 1em;
-  border: 2px solid black;
-  border-radius: 6px;
-  background: transparent;
-  color: inherit;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: space-around;
-  gap: 10px;
-}
-
-.modal-buttons button {
-  padding: 8px 16px;
-  border: 2px solid black;
-  background: none;
-  cursor: pointer;
-  font-weight: bold;
-  color: inherit;
-  border-radius: 6px;
-}
-
-    /* MODALES BONITOS */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.modal-box {
-  background-color: white;
-  color: black;
-  padding: 20px;
-  border: 2px solid black;
-  border-radius: 10px;
-  width: 90%;
-  max-width: 300px;
-  text-align: center;
-  font-family: 'Rubik', sans-serif;
-}
-
-body.dark .modal-box {
-  background-color: #222;
-  color: white;
-  border-color: white;
-}
-
-.modal-message {
-  margin-bottom: 15px;
-  font-weight: bold;
-}
-
-.modal-input {
-  width: 100%;
-  padding: 10px;
-  font-size: 1em;
-  margin-bottom: 15px;
-  border: 2px solid black;
-  border-radius: 6px;
-  background: transparent;
-  color: inherit;
-  outline: none;
-}
-
-.modal-buttons {
-  display: flex;
-  justify-content: space-around;
-  gap: 10px;
-}
-
-.modal-buttons button {
-  flex: 1;
-  padding: 10px;
-  font-weight: bold;
-  background: none;
-  border: 2px solid black;
-  border-radius: 6px;
-  cursor: pointer;
-  color: inherit;
-}
-
-body.dark .modal-buttons button {
-  border-color: white;
-}
-
   </style>
 </head>
 <body>
@@ -464,7 +337,6 @@ body.dark .modal-buttons button {
       }
       currentPiggyId = Object.keys(piggies)[0];
       loadPiggy(currentPiggyId);
-      buildPiggyMenu();
     }
 
     // Guarda en localStorage
@@ -620,42 +492,33 @@ body.dark .modal-buttons button {
 
       const addBtn = document.createElement('button');
       addBtn.textContent = '➕ Añadir hucha';
-     addBtn.onclick = () => {
-  showModal({
-    message: 'Nombre para nueva hucha:',
-    placeholder: 'Ej: Vacaciones',
-    onConfirm: (name) => {
-      if(name && name.trim() !== ''){
-        const newId = Date.now().toString();
-        piggies[newId] = {name: name.trim(), total: 0, goal: 0, history: []};
-        saveData();
-        buildPiggyMenu();
-      }
-    }
-  });
-};
-
+      addBtn.onclick = () => {
+        const name = prompt('Nombre para nueva hucha:');
+        if(name && name.trim() !== ''){
+          const newId = Date.now().toString();
+          piggies[newId] = {name: name.trim(), total: 0, goal: 0, history: []};
+          saveData();
+          buildPiggyMenu();
+        }
+      };
       piggyMenu.appendChild(addBtn);
 
-      if (Object.keys(piggies).length > 1) {
-  const delBtn = document.createElement('button');
-  delBtn.textContent = '🗑️ Eliminar hucha actual';
-  delBtn.onclick = () => {
-    showModal({
-      message: `¿Eliminar la hucha "${piggies[currentPiggyId].name}"?`,
-      showInput: false,
-      onConfirm: () => {
-        delete piggies[currentPiggyId];
-        const ids = Object.keys(piggies);
-        currentPiggyId = ids[0];
-        loadPiggy(currentPiggyId);
-        saveData();
-        buildPiggyMenu();
+      if(Object.keys(piggies).length > 1){
+        const delBtn = document.createElement('button');
+        delBtn.textContent = '🗑️ Eliminar hucha actual';
+        delBtn.onclick = () => {
+          if(confirm(`¿Eliminar la hucha "${piggies[currentPiggyId].name}"?`)){
+            delete piggies[currentPiggyId];
+            const ids = Object.keys(piggies);
+            currentPiggyId = ids[0];
+            loadPiggy(currentPiggyId);
+            saveData();
+            buildPiggyMenu();
+          }
+        };
+        piggyMenu.appendChild(delBtn);
       }
-    });
-  };
-  piggyMenu.appendChild(delBtn);
-}
+    }
 
     // Historial
     function toggleHistory() {
@@ -709,21 +572,12 @@ body.dark .modal-buttons button {
 
     // Editar total
     editBtn.onclick = () => {
-  const current = piggies[currentPiggyId].total.toFixed(2);
-  showModal({
-    message: 'Editar total (€):',
-    placeholder: 'Cantidad',
-    onConfirm: (val) => {
+      const val = prompt('Nuevo total (€):', piggies[currentPiggyId].total);
       const num = parseFloat(val);
-      if (!isNaN(num) && num >= 0) {
+      if(!isNaN(num) && num >= 0){
         editTotal(num);
       }
-    },
-    showInput: true,
-  });
-};
-
-
+    };
 
     // Reiniciar hucha
     resetBtn.onclick = () => {
@@ -812,74 +666,9 @@ body.dark .modal-buttons button {
       }
     };
 
-    // Modal bonito reutilizable
-function showModal({ message = '', placeholder = '', onConfirm = () => {}, showInput = true }) {
-  const modal = document.getElementById('modal');
-  const modalText = document.getElementById('modalText');
-  const modalInput = document.getElementById('modalInput');
-  const cancelBtn = document.getElementById('modalCancel');
-  const okBtn = document.getElementById('modalOk');
-
-  modalText.textContent = message;
-  modalInput.value = '';
-  modalInput.placeholder = placeholder;
-  modalInput.style.display = showInput ? 'block' : 'none';
-
-  // Mostrar modal
-  modal.style.display = 'flex';
-
-  // Cancelar
-  cancelBtn.onclick = () => {
-    modal.style.display = 'none';
-  };
-
-  // Confirmar
-  okBtn.onclick = () => {
-    const value = modalInput.value.trim();
-    modal.style.display = 'none';
-    onConfirm(value);
-  };
-}
-
     // Inicializar
     loadData();
     updateUI();
   </script>
-
-  <!-- Modal bonito de editar total -->
-  <div id="modal" class="modal">
-    <div class="modal-content">
-      <p id="modalText">Mensaje del modal</p>
-      <input id="modalInput" type="text" placeholder="Escribe aquí" />
-      <div class="modal-buttons">
-        <button id="modalCancel">Cancelar</button>
-        <button id="modalOk">Aceptar</button>
-      </div>
-    </div>
-  </div>
-
-<!-- MODALES BONITOS -->
-<div id="customModal" style="display:none;" class="modal-overlay">
-  <div class="modal-box">
-    <div id="customModalMessage" class="modal-message"></div>
-    <input id="customModalInput" type="text" class="modal-input" />
-    <div class="modal-buttons">
-      <button id="customModalConfirm">Aceptar</button>
-      <button id="customModalCancel">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div id="confirmModal" style="display:none;" class="modal-overlay">
-  <div class="modal-box">
-    <div id="confirmModalMessage" class="modal-message"></div>
-    <div class="modal-buttons">
-      <button id="confirmModalYes">Sí</button>
-      <button id="confirmModalNo">No</button>
-    </div>
-  </div>
-</div>
-
-  
 </body>
 </html>
