@@ -841,25 +841,6 @@ function showModal({ message = '', placeholder = '', onConfirm = () => {}, showI
   };
 }
 
-  const okBtn = document.createElement('button');
-  okBtn.textContent = 'Aceptar';
-  okBtn.onclick = () => {
-    const val = input.value;
-    document.body.removeChild(overlay);
-    if (onConfirm) onConfirm(val);
-  };
-
-  buttons.appendChild(cancelBtn);
-  buttons.appendChild(okBtn);
-
-  box.appendChild(msg);
-  box.appendChild(input);
-  box.appendChild(buttons);
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-  input.focus();
-}
-
     // Inicializar
     loadData();
     updateUI();
