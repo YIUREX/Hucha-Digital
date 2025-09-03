@@ -1071,5 +1071,35 @@
     })();
 
   </script>
+
+<script>
+    // Valor inicial (Android lo actualizará con true/false)
+    window.isPro = false;
+
+    // Función para verificar y actualizar interfaz
+    function checkProStatus() {
+        if (window.isPro) {
+            document.querySelectorAll(".pro-feature").forEach(el => el.style.display = "block");
+            document.getElementById("buyProBtn").style.display = "none";
+        } else {
+            document.querySelectorAll(".pro-feature").forEach(el => el.style.display = "none");
+            document.getElementById("buyProBtn").style.display = "block";
+        }
+    }
+
+    // Botón para comprar Pro (lo llama Android)
+    function buyPro() {
+        if (typeof Android !== "undefined" && Android.buyPro) {
+            Android.buyPro();
+        } else {
+            alert("La compra solo está disponible en la app Android.");
+        }
+    }
+
+    // Llamar al inicio para ajustar interfaz
+    document.addEventListener("DOMContentLoaded", checkProStatus);
+</script>
+
+  
 </body>
 </html>
